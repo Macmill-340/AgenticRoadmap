@@ -1,0 +1,113 @@
+# Agentic teaching repo
+
+Teaching corpus for an agentic AI engineer path. **Docs first.** The learner writes the Python files from the phase docs.
+
+This file is the cold-start packet. A new session must not need prior chat history.
+
+## Read order (every new session)
+
+1. This file (`AGENTS.md`)
+2. `docs/STATUS.md` — what is done, what to write next
+3. `docs/MAINTENANCE.md` — fetch official docs before writing
+4. The next phase doc listed in STATUS
+
+Copy-paste prompt:
+
+```
+Read AGENTS.md, docs/STATUS.md, docs/MAINTENANCE.md.
+Do the next item in STATUS.md.
+Re-fetch that batch's official URLs before writing.
+Do not skip the fetch list.
+```
+
+## What this is
+
+A phase-by-phase teaching path. Each `docs/*.md` is a **closed packet**: what, why, how, `uv pip install -r` lines, snippets, expected output, suggested filename. Someone should be able to implement from that file alone.
+
+Original handoff (do not treat as current API truth): `agentic-frameworks-teaching-roadmap.md`
+
+## Frameworks (only these)
+
+| Layer | Tool | Role |
+|---|---|---|
+| Mechanism | Raw Python + `pydantic.BaseModel` + LiteLLM | Tool-call loop, state, validation, provider swap |
+| Retrieval | LlamaIndex (core) | Load → chunk → embed → store → query |
+| Orchestration | LangGraph | Graph, checkpointing, HITL |
+| Optional | smolagents | Code-as-action (Phase 8 only) |
+
+**Not in the core path:** LangChain-as-orchestration, Pydantic AI as a framework, MCP (parking lot), LlamaIndex Workflows as a standalone phase, LiteLLM **proxy** (gateway product). LiteLLM is the **Python SDK** only — one `completion()` call.
+
+**The hybrid that matters:** LlamaIndex retrieves; LangGraph orchestrates. Wrap a query engine as a plain function/`@tool` and call it from a graph node.
+
+## Pedagogy (do not break)
+
+**Simplest working form first. One deepening. Stop.**
+
+- **Raw-first only for Phase 2** (the ~40-line tool loop). That loop is the lesson.
+- **Abstraction-first** for RAG, LangGraph, multi-agent, orientation.
+- **Concept-only** for decoding (Phase 1). Mermaid + HF Spaces. No neural nets.
+- Phase 7b (multi-agent) comes **after** a working single-agent graph, not earlier.
+- MCP, LangSmith, evals, A2A, Deep Agents stay in the parking-lot appendix until asked.
+
+## Tool-calling API
+
+- **Phases 2–7:** OpenAI **Chat Completions** shape via `litellm.completion` (`tool_calls`, `role: "tool"`).
+- **Default model:** `gemini/gemini-2.5-flash` + `GEMINI_API_KEY`. Swap later by changing the model string (`openai/gpt-4o-mini`, `ollama/qwen3`).
+- **Phase 9:** OpenAI **Responses API** as a delta, not a rewrite.
+
+## Models (ease, not local-first)
+
+- Chat: Gemini through LiteLLM. No Ollama required.
+- Embeddings (Phases 4–6): HuggingFace `all-MiniLM-L6-v2` (~90 MB, one download, CPU). Not Ollama.
+- Ollama is optional (change the LiteLLM model string). Do not install `litellm[proxy]`.
+
+## uv (always)
+
+Windows install:
+
+```powershell
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
+Per phase-group: `uv venv`, then `uv pip install -r requirements.txt`. Run with `uv run python path\to\file.py`.
+
+Never `pip install` (bare). Never `uv add` / `uv.lock` in this path. Pins live in `requirements.txt`.
+
+Isolated projects (skeletons exist; learner writes the `.py` files):
+
+| Folder | Phases | Learner files |
+|---|---|---|
+| `agents/foundation/` | 0–3 | `00_orientation.py`, `02_tool_loop.py`, `03_state.py` |
+| `agents/llamaindex/` | 4–6 | `04_rag_fast.py`, `05_rag_decomposed.py`, `06_rag_as_tool.py` |
+| `agents/langgraph/` | 7, 7b, 9 | `07_graph.py`, `07b_multi_agent.py`, `09_conventions.py` |
+| `agents/smolagents/` | 8 optional | folder created only when Phase 8 is written |
+
+Per group: `uv venv`, then `uv pip install -r requirements.txt`. Run with `uv run python path\to\file.py`.
+
+## Layout
+
+```
+docs/            teaching packets + MAINTENANCE + STATUS
+agents/          uv project skeletons; learner writes the .py files
+data/            small local docs for RAG
+AGENTS.md        this file
+```
+
+## Do not
+
+- Expand parking lot into new phases without an explicit request.
+- Use `from langgraph.prebuilt import create_react_agent` (deprecated). Production shortcut is `from langchain.agents import create_agent` — Phase 9 only.
+- Use `AgentWorkflow` for the Phase 0 one-tool demo. Use `FunctionAgent`.
+- Default LlamaIndex `Settings` to OpenAI. Set `Settings.llm` and `Settings.embed_model` every time.
+- Wrap `interrupt()` in bare `try/except`. HITL is `interrupt()` + `Command(resume=...)`, not `input()`.
+- Commit secrets. Use `.env`.
+- Write learner Python files unless STATUS says to. Batch 1 is **docs only**.
+
+## Batches
+
+1. Session files + setup + Phases 0–2
+2. Phases 3–6
+3. Phases 7 + 7b
+4. Phases 8–9 + parking-lot appendix
+
+End of every batch: update `docs/STATUS.md`, then stop.

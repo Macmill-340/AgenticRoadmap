@@ -1,0 +1,9 @@
+# Phases 4-6 (RAG). Unpinned on purpose.
+# Rerank package is added when the Phase 4 deepening is written.
+litellm
+python-dotenv
+llama-index-core
+llama-index-llms-litellm
+llama-index-embeddings-huggingface
+llama-index-vector-stores-chroma
+chromadb
