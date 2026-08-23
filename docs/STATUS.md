@@ -26,6 +26,7 @@ Skeleton folders exist with unpinned `requirements.txt`. Learner writes the `.py
 - [x] `docs/02-phase-1-decoding.md`
 - [x] `docs/03-phase-2-tool-loop.md`
 - [x] `agents/foundation/requirements.txt`
+- [x] `README.md` + `.gitignore`
 
 Retuned: `uv pip` + `requirements.txt`; LiteLLM → Gemini; MiniLM for later RAG; Ollama optional.
 

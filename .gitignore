@@ -2,3 +2,27 @@
 .venv/
 **/__pycache__/
 *.pyc
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Session dumps (not teaching packets)
+session-ses_*.md
+
+# Local model / RAG / checkpoint artifacts
+.cache/
+chroma/
+chroma_db/
+*.sqlite3
+*.db
+
+# Accidental lock / build outputs
+uv.lock
+*.egg-info/
+dist/
+build/

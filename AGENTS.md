@@ -90,7 +90,8 @@ Per group: `uv venv`, then `uv pip install -r requirements.txt`. Run with `uv ru
 docs/            teaching packets + MAINTENANCE + STATUS
 agents/          uv project skeletons; learner writes the .py files
 data/            small local docs for RAG
-AGENTS.md        this file
+README.md        GitHub overview; learner entry point (links to 00-setup.md)
+AGENTS.md        cold-start packet for AI sessions extending the corpus
 ```
 
 ## Do not

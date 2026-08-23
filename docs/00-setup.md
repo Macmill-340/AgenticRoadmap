@@ -3,7 +3,8 @@
 Last grounded: 2026-08-21  
 Prereq files: `AGENTS.md`  
 Fetch before writing later phases: uv + LiteLLM + Gemini URLs in `docs/MAINTENANCE.md`  
-Suggested file: `agents/foundation/requirements.txt` (template below)
+Suggested file: `agents/foundation/requirements.txt` (template below)  
+GitHub-facing overview lives in the root `README.md`; this file is the hands-on install packet.
 
 ## What
 
