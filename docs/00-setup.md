@@ -117,11 +117,14 @@ print(resp.choices[0].message.content)
 
 ```
 AgenticRoadmap/
+  README.md
   AGENTS.md
   docs/
   .env
+  data/                # sample docs for the RAG phases already included
   agents/foundation/   # venv + requirements.txt, phases 0–3
-  data/                # add small .txt files before Phase 4
+  agents/llamaindex/   # skeleton, phases 4–6 (venv when you get there)
+  agents/langgraph/    # skeleton, phases 7, 7b, 9
 ```
 
 ## Optional: Ollama

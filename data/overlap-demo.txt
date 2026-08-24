@@ -1,0 +1,5 @@
+A short internal memo kept for the chunking demo.
+
+The team shipped three small tools this quarter. The first parses invoices into JSON. The second drafts weekly status emails from commit logs. The third watches our error tracker and opens tickets automatically when a new crash pattern appears twice within one hour.
+
+Project Nightjar was approved on 12 February 2024 after the pilot cut triage time by forty percent. Budget for next quarter is unchanged. Hiring stays frozen except for one retrieval engineer role.

@@ -18,6 +18,17 @@ See the machine view of Phase 0: you type text, the model predicts **one next to
 
 Phase 0 looked like a decision. It was next-token prediction, steered toward a tool schema. If that click happens now, every later framework is the same loop with nicer syntax.
 
+## Skeleton
+
+A model only **picks the next token**.
+
+1. Tokenize
+2. Score every vocab item
+3. Pick one (greedy or sample)
+4. Append
+5. Repeat until stop
+6. Detokenize
+
 ## Official / interactive sources
 
 - HF Agents Course — What are LLMs: https://huggingface.co/learn/agents-course/unit1/what-are-llms  

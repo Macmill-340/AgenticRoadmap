@@ -46,8 +46,18 @@ Original handoff (do not treat as current API truth): `agentic-frameworks-teachi
 - **Raw-first only for Phase 2** (the ~40-line tool loop). That loop is the lesson.
 - **Abstraction-first** for RAG, LangGraph, multi-agent, orientation.
 - **Concept-only** for decoding (Phase 1). Mermaid + HF Spaces. No neural nets.
+- Every phase packet gets a `## Skeleton` after Why: one recitable sentence (e.g. "an agent = model + tools + a loop") + 4–6 numbered ingredient steps. README's `## Spine` collects one line per phase — append when the packet is written.
 - Phase 7b (multi-agent) comes **after** a working single-agent graph, not earlier.
 - MCP, LangSmith, evals, A2A, Deep Agents stay in the parking-lot appendix until asked.
+
+## Try this (milestones)
+
+Optional creativity prompts at the end of milestone packets — **not** exercises. No levels, no answer key, no `exercises/` folder, no new packages.
+
+- Milestone packets only: **2, 3, 6, 7/7b**. Never 0, 1, 4, 5, 8, 9.
+- Pattern: one situation → build with tools they already know how to write → "Done when …" → close with "skip or invent your own".
+- When **planning** a listed phase: draft the full prompt in the plan (detailed, not a stub). When **writing** the packet: include `## Try this` after Checkpoint.
+- Foundation gets more room (Phase 2, then Phase 3). Framework side stays thin (Phase 6, then 7/7b).
 
 ## Tool-calling API
 
@@ -102,7 +112,7 @@ AGENTS.md        cold-start packet for AI sessions extending the corpus
 - Default LlamaIndex `Settings` to OpenAI. Set `Settings.llm` and `Settings.embed_model` every time.
 - Wrap `interrupt()` in bare `try/except`. HITL is `interrupt()` + `Command(resume=...)`, not `input()`.
 - Commit secrets. Use `.env`.
-- Write learner Python files unless STATUS says to. Batch 1 is **docs only**.
+- Do not write the learner's `.py` files — every packet tells the learner which file to create. STATUS tracks docs; learners track code.
 
 ## Batches
 

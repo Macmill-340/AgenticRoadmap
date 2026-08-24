@@ -15,19 +15,34 @@ Packets marked *pending* are written batch by batch, each grounded against curre
 | 1 | How decoding actually works | concept only | — (HF Spaces demos) | [`docs/02-phase-1-decoding.md`](docs/02-phase-1-decoding.md) — done |
 | 2 | The raw tool-calling loop | raw, by hand | `02_tool_loop.py` | [`docs/03-phase-2-tool-loop.md`](docs/03-phase-2-tool-loop.md) — done |
 | 3 | State & memory by hand | raw, by hand | `03_state.py` | [`docs/04-phase-3-state-memory.md`](docs/04-phase-3-state-memory.md) — done |
-| 4 | RAG fast (LlamaIndex + Chroma) | abstraction-first | `04_rag_fast.py` | *pending* |
-| 5 | RAG decomposed | open the hood | `05_rag_decomposed.py` | *pending* |
-| 6 | RAG as a tool | glue | `06_rag_as_tool.py` | *pending* |
+| 4 | RAG fast (LlamaIndex + Chroma) | abstraction-first | `04_rag_fast.py` | [`docs/05-phase-4-rag-fast.md`](docs/05-phase-4-rag-fast.md) — done |
+| 5 | RAG decomposed | open the hood | `05_rag_decomposed.py` | [`docs/06-phase-5-rag-decomposed.md`](docs/06-phase-5-rag-decomposed.md) — done |
+| 6 | RAG as a tool | glue | `06_rag_as_tool.py` | [`docs/07-phase-6-rag-as-tool.md`](docs/07-phase-6-rag-as-tool.md) — done |
 | 7 | LangGraph single-agent graph | abstraction, then peek | `07_graph.py` | *pending* |
 | 7b | Multi-agent (supervisor, then handoff contrast) | abstraction | `07b_multi_agent.py` | *pending* |
 | 8 | smolagents: code-as-action | optional side quest | `08_code_vs_tools.py` | *pending* |
 | 9 | Modern conventions (Responses API, `create_agent`) | delta | `09_conventions.py` | *pending* |
+
+## Spine
+
+Recite this after any break: one sentence per layer, then the recipe.
+
+- **Agent** — model + tools + a loop. Pick a model, write tools, hand both over, ask, print.
+- **Decoding** — the model only picks the next token. Score, pick, append, repeat, stop.
+- **The loop** — messages + schemas → call → run → append → repeat (`max_steps` raises).
+- **Memory** — a dict you render into the prompt. History for continuity, facts for durability.
+- **RAG** — load → embed → store → retrieve → generate (+ optional rerank).
+- **RAG internals** — Phase 4's one-liners are just load / chunk / embed / query functions.
+- **RAG as a tool** — the engine becomes one more tool inside your Phase 2 loop.
+
+Later phases (LangGraph, multi-agent, conventions) append their line here as each packet is written.
 
 ## How to follow
 
 1. Do [`docs/00-setup.md`](docs/00-setup.md) end to end (~10 min): install uv, set a free Gemini key in `.env`.
 2. Open the next packet, create its file in the right folder, and work **one segment at a time**: implement → run → match the expected output → next segment.
 3. Every packet ends with checkpoint questions (answers included) — if you cannot answer them, rerun the segment.
+4. Milestone packets (2, 3, 6, 7/7b) end with an optional **Try this**: one small build of your own using what you just wrote. Skip it or invent something else — both are fine.
 
 ## Stack defaults
 
@@ -62,6 +77,7 @@ docs/      teaching packets + STATUS.md (progress cursor) + MAINTENANCE.md (rese
 agents/    uv skeletons — the .py files are yours to write
 data/      small local documents for the RAG phases
 AGENTS.md  cold-start packet for AI coding sessions that extend this corpus
+README.md  this file — learner entry point
 ```
 
 This corpus is built to grow through AI-assisted sessions: any new session starts from `AGENTS.md` → `docs/STATUS.md` → `docs/MAINTENANCE.md` and continues the next unchecked item, re-fetching official docs before writing.

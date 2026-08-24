@@ -1,0 +1,5 @@
+Retrieval-augmented generation, stage by stage.
+
+Loading brings raw files into memory as documents. Indexing splits each document into chunks and converts every chunk into an embedding vector that captures its meaning. Storing keeps those vectors in a database such as Chroma so they survive restarts. Retrieval embeds the user query the same way and finds the nearest chunks by cosine similarity. Generation stuffs the retrieved chunks into the prompt so the model answers from your data instead of guessing from training memory.
+
+Chunk size and overlap decide whether an idea split across a boundary stays answerable. Small embedding models like MiniLM map text into 384 dimensions but truncate long inputs, so keep chunks short.

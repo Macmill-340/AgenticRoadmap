@@ -29,6 +29,15 @@ Phase 2's `run_agent` built `messages` inside the function. When it returned, ev
 
 Foreshadow (one paragraph, no imports): LangGraph's `MessagesState` stores a message list whose reducer decides overwrite-vs-append on updates — exactly the choice you make manually here when you decide whether new turns replace or extend `state["messages"]`. Phase 7 makes that explicit.
 
+## Skeleton
+
+Memory = **a dict you render into the prompt**.
+
+1. Hold `state = {messages, facts}`
+2. Render facts into the system string
+3. Call the Phase 2 loop on that state
+4. If over budget: cap or summarize
+
 ## Official sources
 
 - LiteLLM token usage & helpers: https://docs.litellm.ai/docs/completion/token_usage
@@ -324,3 +333,11 @@ Print `len(state["messages"])` before/after trimming so the mechanism is visible
 4. `TOKEN_BUDGET = 400` is fake. In production, where do the two real numbers come from?
 
 Answers: (1) the `messages` list — it was the only carrier; deleting it deleted the memory. (2) summarize moves old content into `facts`, which is rendered into the system prompt and never trimmed; cap deletes outright. (3) on the *next* `build_messages()` — i.e., the next `completion()` call, possibly the same turn's next loop iteration. (4) the model's context window (provider spec / `litellm.model_cost`) and your own cost/latency ceiling; measured against `usage.prompt_tokens` or `token_counter`.
+
+---
+
+## Try this
+
+Four turns, played with a friend (or yourself): turn 1 they tell the agent their name **and one preference** ("I'm Sam and I hate spoilers"). Turn 2–3, chat about something else so history grows. Turn 4, ask *"what does Sam hate?"* — with `enforce_cap` active so old turns drop.
+
+Done when the answer comes from `facts`, not leftover history: the preference survives even though the early turns were trimmed. If it fails, check whether turn 1 actually called `remember`. Skip it or invent your own scenario — that is the point.

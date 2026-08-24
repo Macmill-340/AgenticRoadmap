@@ -32,37 +32,42 @@ Retuned: `uv pip` + `requirements.txt`; LiteLLM → Gemini; MiniLM for later RAG
 
 No learner Python files yet. That is intentional.
 
-## Next (Batch 2 — Phases 3–6)
-
-Write in order after fetching the Batch 2 URL list in `docs/MAINTENANCE.md`:
+## Done (Batch 2 — Phases 3–6)
 
 - [x] **`docs/04-phase-3-state-memory.md`** — raw. State = plain dict / TypedDict rendered into the system prompt each turn; not a Memory object. History + facts + tool results. One deepening: cap vs summarize (show the behavior change), plus token budget as a hard constraint. Maps back to Phase 2 loop; foreshadows LangGraph `MessagesState`. File: `agents/foundation/03_state.py`
-- [ ] **`docs/05-phase-4-rag-fast.md`** — abstraction. Set `Settings.llm` + `Settings.embed_model` **first**, every script. `SimpleDirectoryReader` → `VectorStoreIndex` → persistent Chroma (`PersistentClient`) → `as_query_engine()`. Chat via LiteLLM Gemini; embeddings via `HuggingFaceEmbedding("all-MiniLM-L6-v2")`. One deepening: rerank (industry default after naive top-k). Not BM25 / graph RAG / LlamaParse / Ollama nomic. File: `agents/llamaindex/04_rag_fast.py`
-- [ ] **`docs/06-phase-5-rag-decomposed.md`** — decompose, no LlamaIndex. Hand-roll load → fixed-size chunk → overlap demo (query fails, then succeeds) → MiniLM embed → Chroma client → cosine/top-k → stuff prompt → generate. One deepening: overlap failure + timed `asyncio.gather` vs sequential. Extra: retrieved junk can still produce a fluent wrong answer (groundedness). File: `agents/llamaindex/05_rag_decomposed.py`
-- [ ] **`docs/07-phase-6-rag-as-tool.md`** — glue. Phase 4 query engine wrapped as a plain function/tool schema inside the Phase 2 loop; agent chooses retrieve vs answer directly. Almost no new code — keep it short. File: `agents/llamaindex/06_rag_as_tool.py`
-- [x] **`agents/llamaindex/requirements.txt`** — `litellm`, `llama-index-core`, `llama-index-llms-litellm`, `llama-index-embeddings-huggingface`, `llama-index-vector-stores-chroma`, `chromadb`, `python-dotenv`; rerank package pinned at write time. Exact pins at write time; freeze if a pin fails.
-- [ ] **`data/` sample docs** — a few small local `.txt` files before Phase 4 runs.
+- [x] **`docs/05-phase-4-rag-fast.md`** — abstraction. Set `Settings.llm` + `Settings.embed_model` **first**, every script. `SimpleDirectoryReader` → `VectorStoreIndex` → persistent Chroma (`PersistentClient`) → `as_query_engine()`. Chat via LiteLLM Gemini; embeddings via `HuggingFaceEmbedding("all-MiniLM-L6-v2")`. One deepening: rerank (industry default after naive top-k). Not BM25 / graph RAG / LlamaParse / Ollama nomic. File: `agents/llamaindex/04_rag_fast.py`
+- [x] **`docs/06-phase-5-rag-decomposed.md`** — decompose, no LlamaIndex. Hand-roll load → fixed-size chunk → overlap demo (query fails, then succeeds) → MiniLM embed (`sentence_transformers` directly) → raw Chroma client with own embeddings → cosine/top-k → stuff prompt → generate. One deepening: overlap failure + honest async timing (sequential vs batch vs `gather`+threads; batch wins on CPU). Extra: retrieved junk produces a fluent wrong answer (groundedness). New data: `overlap-demo.txt`. File: `agents/llamaindex/05_rag_decomposed.py`
+- [x] **`docs/07-phase-6-rag-as-tool.md`** — glue. Phase 4 query engine wrapped as `search_notes(query)` + hand-written schema inside a copy of the Phase 2 loop beside `add`; model chooses retrieve / arithmetic / direct answer. Try this: three of your own files, known + unknown questions. File: `agents/llamaindex/06_rag_as_tool.py`
+- [x] **`agents/llamaindex/requirements.txt`** — `litellm`, `python-dotenv`, `llama-index-core`, `llama-index-llms-litellm`, `llama-index-embeddings-huggingface`, `llama-index-vector-stores-chroma`, `chromadb`, `sentence-transformers`. Reranker (`SentenceTransformerRerank`) ships in core — no extra package. Unpinned by design; freeze if a pin fails.
+- [x] **`data/` sample docs** — `agent-loop.txt` (real answer source), `rag.txt` (real), `decoy-tools.txt` (keyword bait that rerank should demote), `overlap-demo.txt` (Nightjar memo for the chunk-overlap failure). Sized under MiniLM's ~256-token truncation.
+
+## Next (Batch 3 — Phases 7 + 7b)
+
+Fetch the Batch 3 URL list from `docs/MAINTENANCE.md` before writing. Then:
+
+- [ ] **`docs/08-phase-7-langgraph.md`** — abstraction → short decompose. Segments: `StateGraph` + `MessagesState` + reducers (`add_messages` vs overwrite); agent node + `ToolNode` + `tools_condition`; LlamaIndex retriever wrapped as `@tool` (the hybrid production pattern); `SqliteSaver` + `thread_id` — kill process, resume, contrast `InMemorySaver`; `interrupt()` + `Command(resume=...)` — never `input()`, node restarts from top on resume, side effects must be idempotent, no bare `try/except` around `interrupt`; short hand-rolled dispatcher mapping back to Phases 2–3. Streaming = sidebar only. Never `create_react_agent` (deprecated). One mermaid: START → agent → tools? → ToolNode → agent → END. Skeleton + Spine line in same pass. File: `agents/langgraph/07_graph.py`
+- [ ] **`docs/09-phase-7b-multi-agent.md`** — abstraction. Supervisor first: two specialists (`research` = RAG tool from 6/7, `writer` = no tools, markdown out) invoked as `@tool`s by a supervisor; one task needing both. One deepening: handoff as contrast (`Command.goto`; LlamaIndex `AgentWorkflow(can_handoff_to=...)` is a pointer, not a build). Not router / Skills / A2A / Deep Agents. Milestone packet: draft its `## Try this` in the plan before writing. One mermaid: user → supervisor → specialists → supervisor → user. File: `agents/langgraph/07b_multi_agent.py`
+- [ ] **`agents/langgraph/requirements.txt`** — skeleton exists (`litellm`, `python-dotenv`, `langgraph`, `langchain`). Extend at write time: Sqlite checkpointer extra + LlamaIndex wrap deps confirmed against installed pins.
 
 Then update this file and stop.
 
 ## Later
-
-### Batch 3 — Phases 7 + 7b
-
-Fetch the Batch 3 URL list first.
-
-- [ ] **`docs/08-phase-7-langgraph.md`** — abstraction → short decompose. Segments: `StateGraph` + `MessagesState` + reducers (`add_messages` vs overwrite); agent node + `ToolNode` + `tools_condition`; LlamaIndex retriever wrapped as `@tool` (the hybrid production pattern); `SqliteSaver` + `thread_id` — kill process, resume, contrast `InMemorySaver`; `interrupt()` + `Command(resume=...)` — never `input()`, node restarts from top on resume, side effects must be idempotent, no bare `try/except` around `interrupt`; short hand-rolled dispatcher mapping back to Phases 2–3. Streaming = sidebar only. Never `create_react_agent` (deprecated). One mermaid: START → agent → tools? → ToolNode → agent → END. File: `agents/langgraph/07_graph.py`
-- [ ] **`docs/09-phase-7b-multi-agent.md`** — abstraction. Supervisor first: two specialists (`research` = RAG tool from 6/7, `writer` = no tools, markdown out) invoked as `@tool`s by a supervisor; one task needing both. One deepening: handoff as contrast (`Command.goto`; LlamaIndex `AgentWorkflow(can_handoff_to=...)` is a pointer, not a build). Not router / Skills / A2A / Deep Agents. One mermaid: user → supervisor → specialists → supervisor → user. File: `agents/langgraph/07b_multi_agent.py`
-- [ ] **`agents/langgraph/requirements.txt`** — skeleton exists (`litellm`, `python-dotenv`, `langgraph`, `langchain`). Extend + pin at write time (LangGraph modular packages: graph engine vs checkpoint extras are separate).
 
 ### Batch 4 — Phases 8–9 + parking lot
 
 Fetch the Batch 4 URL list first.
 
 - [ ] **`docs/10-phase-8-smolagents.md`** — optional, half day. `CodeAgent` vs `ToolCallingAgent` on the same task; code-as-action is a different bet, not a framework to master. Sandbox note only. File: `agents/smolagents/08_code_vs_tools.py`
-- [ ] **`docs/11-phase-9-modern-conventions.md`** — delta, not rewrite. OpenAI Responses API loop beside the Chat Completions loop they already built; `from langchain.agents import create_agent` as harness on the graph they understand; structured output (`response_format`) vs tools — when to use which; stale-import map ("if you see `create_react_agent` / `AgentWorkflow` for one tool / Chat Completions-only tutorials, here's what replaced them"). File: `agents/langgraph/09_conventions.py`
+- [ ] **`docs/11-phase-9-modern-conventions.md`** — delta + **translation map** (approved expansion; no second implementation anywhere). Part A: Responses API loop beside the Chat Completions loop they built; structured output vs tools; stale-import map ("if you see `create_react_agent` / one-tool `AgentWorkflow` / Chat-Completions-only tutorials, here's what replaced them"). Part B — each row gets what-it-is, when-you'd-switch, ≤5-line snippet: Phase 2 loop → LangGraph `create_agent` harness (LlamaIndex `FunctionAgent` = pointer back to Phase 0); Phase 3 dict → LlamaIndex ChatEngine/memory as *pointer* + LangGraph `MessagesState`/Store; Phases 4–6 engine-as-tool → already the hybrid pattern; `max_steps` → `recursion_limit`; LlamaIndex Workflows / subgraphs → pointers only. File: `agents/langgraph/09_conventions.py`
 - [ ] **`docs/appendix-parking-lot.md`** — pointers only, one-liners + official URLs: MCP, LangSmith, evals/guardrails, A2A, Deep Agents, LlamaIndex Workflows. Do not expand without an explicit request.
 - [ ] **`agents/smolagents/requirements.txt`** — only if Phase 8 is written (folder is deferred until then).
+
+### Optional fluency tours — write only when explicitly asked
+
+Same rule as smolagents (Phase 8): no folder, no doc, no code until requested. Purpose: framework fluency on tasks already built raw — zero new concepts.
+
+- **LlamaIndex-native agent tour** — `FunctionAgent` + LlamaIndex memory + the Phase 6 RAG tool, same task. Shows the native stack end to end.
+- **LangGraph harness tour** — `create_agent` + checkpointer rebuilding the Phase 7 task on top of the Phase 9 map.
 
 ## Open notes
 
@@ -70,4 +75,6 @@ Fetch the Batch 4 URL list first.
 - Phase 0 uses `FunctionAgent` + `LiteLLM`, not `AgentWorkflow`, not Ollama.
 - If a `requirements.txt` pin fails, freeze after a successful install and write exact versions back.
 - Every phase doc gets exactly one mermaid (mental map, not decoration), per the locked template.
+- Every phase packet gets `## Skeleton` after Why: one recitable sentence + 4–6 ingredient steps. Append that phase's line to README's `## Spine` in the same pass.
+- `## Try this` rule (see AGENTS.md): optional milestone prompts only — Phases 2, 3, 6, 7/7b. One situation + "Done when …" + "skip or invent your own". Draft the prompt during planning; place the section after Checkpoint when writing. Locked prompts: P2 = keep `add`, add one invented tool, one user line needing both; P3 = preference told on turn 1 must survive capping by turn 4; P6 = agent answers from your own three files in `data/` or chats, retrieval never hard-coded; P7/7b = one real approval via `interrupt()` before a write tool, or two specialists on a task you actually care about.
 - MiniLM `all-MiniLM-L6-v2` truncates at ~256 tokens — this replaces the old Ollama `num_ctx` truncation demo in Phases 4–5.

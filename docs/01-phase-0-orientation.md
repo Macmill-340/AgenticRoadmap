@@ -29,6 +29,16 @@ Later phases explain internals against a live picture, not a slide. This is not 
 
 Chat goes through **LiteLLM**, not the Google SDK. Swap providers later by changing the model string.
 
+## Skeleton
+
+An agent = **model + tools + a loop**.
+
+1. Pick a model
+2. Write one tool
+3. Hand both to `FunctionAgent`
+4. Ask a question
+5. Print the answer
+
 ## Official sources
 
 - Building an agent: https://docs.llamaindex.ai/en/stable/understanding/agent/

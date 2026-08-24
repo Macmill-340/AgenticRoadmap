@@ -38,6 +38,16 @@ MODEL = "gemini/gemini-2.5-flash"
 # MODEL = "ollama/qwen3"  # needs Ollama running
 ```
 
+## Skeleton
+
+The loop = **messages + schemas → call → run → append → repeat**.
+
+1. Messages in
+2. `completion(..., tools=)`
+3. If `tool_calls`: validate, run, append `role: "tool"`
+4. Else: print answer and stop
+5. `max_steps` exceeded → raise
+
 ## Official sources
 
 - LiteLLM: https://docs.litellm.ai/docs/
@@ -313,3 +323,11 @@ Do not add streaming or retries in this file. Do not start the LiteLLM proxy.
 5. What do you change to use OpenAI instead of Gemini?
 
 Answers: (1) the model emitted tokens, not a Python dict; (2) `"tool"`; (3) send the error string back as `content`; (4) runaway is a real failure; (5) `MODEL` and `OPENAI_API_KEY`.
+
+---
+
+## Try this
+
+Keep the loop. Keep `add`. Invent **one** more tool you would actually use — a `now()` clock, a fake weather lookup, a `remember(key, value)` stub, anything — write its JSON schema by hand like Segment 2, then give it one user line that needs **both** tools ("add 12 + 30 and remember that I owe 42").
+
+Done when you see both `role: "tool"` messages in the transcript and a final answer using both results. Skip it or invent something else entirely — that is the point.

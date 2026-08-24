@@ -1,0 +1,5 @@
+The tool-calling loop.
+
+An AI agent is a while-loop wrapped around a chat model. Each iteration sends the conversation messages plus JSON schemas describing the available functions. The model either answers in prose or proposes tool_calls with arguments. Your Python code executes those functions and appends each result as a message with role "tool", keyed by tool_call_id. The next iteration sees that observation and continues until the model answers without calling anything.
+
+Guardrails matter: cap iterations with max_steps and raise when exceeded; validate arguments with a typed schema; send validation failures back to the model as observations instead of crashing. This single loop, at roughly forty lines, is the mechanism every agent framework wraps.
