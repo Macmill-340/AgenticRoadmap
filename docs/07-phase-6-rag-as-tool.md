@@ -9,10 +9,10 @@ uv (same group as Phases 4–5):
 
 ```powershell
 cd agents\llamaindex
-uv pip install -r requirements.txt
+uv sync
 ```
 
-No new packages. Same `requirements.txt`.
+No new packages. Same `pyproject.toml`.
 
 Suggested file: `agents/llamaindex/06_rag_as_tool.py`  
 Mode: **glue**. Almost no new code — its value is two builds clicking together. Keep it short.

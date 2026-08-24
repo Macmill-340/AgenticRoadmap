@@ -13,8 +13,7 @@ uv (from `agents/foundation`):
 
 ```powershell
 cd agents\foundation
-uv venv
-uv pip install -r requirements.txt
+uv sync
 ```
 
 Suggested file: `agents/foundation/02_tool_loop.py`  

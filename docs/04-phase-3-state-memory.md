@@ -10,11 +10,10 @@ uv (from `agents/foundation`):
 
 ```powershell
 cd agents\foundation
-uv venv
-uv pip install -r requirements.txt
+uv sync
 ```
 
-No new packages. Same `requirements.txt` as Phase 2.
+No new packages. Same `pyproject.toml` as Phase 2.
 
 Suggested file: `agents/foundation/03_state.py`  
 Mode: **raw**. Direct extension of Phase 2. No Memory class, no framework.

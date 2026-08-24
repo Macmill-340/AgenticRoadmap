@@ -14,8 +14,7 @@ uv (new project group):
 
 ```powershell
 cd agents\llamaindex
-uv venv
-uv pip install -r requirements.txt
+uv sync
 ```
 
 First run downloads ~90 MB (MiniLM) plus a tiny cross-encoder later. One time, CPU.
@@ -232,7 +231,7 @@ print(engine_reranked.query(QUERY))
 - No ChatEngine / LlamaIndex memory / multi-turn here (that hides Phase 3).
 - No wrapping the engine as a tool yet — that is all of Phase 6.
 - No BM25, hybrid search, graph RAG, LlamaParse, Ollama nomic, Cohere/Jina/LLM rerank.
-- No pinning — freeze versions after the first successful install if you want exactness.
+- No pinning by hand — the committed `uv.lock` pins everything; `uv add` when you need a new package.
 - Do not write `05_rag_decomposed.py` yet.
 
 ## Suggested final file shape

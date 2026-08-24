@@ -1,0 +1,11 @@
+[project]
+name = "foundation"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "litellm",
+    "pydantic",
+    "python-dotenv",
+    "llama-index-core",
+    "llama-index-llms-litellm",
+]

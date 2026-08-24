@@ -1,5 +1,0 @@
-litellm
-pydantic
-python-dotenv
-llama-index-core
-llama-index-llms-litellm

@@ -21,8 +21,7 @@ chroma_db/
 *.sqlite3
 *.db
 
-# Accidental lock / build outputs
-uv.lock
+# Build outputs
 *.egg-info/
 dist/
 build/

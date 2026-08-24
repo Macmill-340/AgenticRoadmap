@@ -11,7 +11,7 @@ uv (same group as Phase 4):
 
 ```powershell
 cd agents\llamaindex
-uv pip install -r requirements.txt
+uv sync
 ```
 
 No new packages. `sentence-transformers` and `chromadb` are already there.

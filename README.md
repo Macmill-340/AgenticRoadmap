@@ -10,7 +10,7 @@ Packets marked *pending* are written batch by batch, each grounded against curre
 
 | # | Topic | Mode | You write | Packet |
 |---|---|---|---|---|
-| — | Setup (uv, Gemini key, isolated venvs) | — | `requirements.txt` per folder | [`docs/00-setup.md`](docs/00-setup.md) — done |
+| — | Setup (uv, Gemini key, isolated uv projects) | — | `pyproject.toml` per folder (provided) | [`docs/00-setup.md`](docs/00-setup.md) — done |
 | 0 | Orientation: your first agent | guided demo | `00_orientation.py` | [`docs/01-phase-0-orientation.md`](docs/01-phase-0-orientation.md) — done |
 | 1 | How decoding actually works | concept only | — (HF Spaces demos) | [`docs/02-phase-1-decoding.md`](docs/02-phase-1-decoding.md) — done |
 | 2 | The raw tool-calling loop | raw, by hand | `02_tool_loop.py` | [`docs/03-phase-2-tool-loop.md`](docs/03-phase-2-tool-loop.md) — done |
@@ -48,7 +48,7 @@ Later phases (LangGraph, multi-agent, conventions) append their line here as eac
 
 | Role | Choice | Why |
 |---|---|---|
-| Install | [uv](https://docs.astral.sh/uv/) — `uv venv` + `uv pip install -r requirements.txt` | fast, pip-style habits, pins live in `requirements.txt` |
+| Install | [uv](https://docs.astral.sh/uv/) — `uv sync` inside each project folder | fast; exact versions pinned in each committed `uv.lock` |
 | Chat + tools | LiteLLM → Gemini (`gemini/gemini-2.5-flash`) | reliable tool-calling; hot-swap providers by editing one model string |
 | Embeddings (phases 4–6) | HuggingFace `all-MiniLM-L6-v2` (~90 MB, CPU) | no Ollama required |
 | Tool validation | `pydantic.BaseModel` | typed arguments; errors go back to the model as observations |
@@ -68,7 +68,7 @@ One uv project per layer so dependency trees never fight:
 | `agents/langgraph/` | 7, 7b, 9 |
 | `agents/smolagents/` | created only if Phase 8 is written |
 
-Skeletons ship with unpinned `requirements.txt`; you run `uv venv` in a folder only when you reach its phase group.
+Each folder is its own uv project: `pyproject.toml` lists direct deps, the committed `uv.lock` pins every resolved version. Enter a folder and run `uv sync` when you reach its phase group; extend it later with `uv add`. Experiments installed ad hoc are cleaned by the next `uv sync`.
 
 ## Repo layout
 

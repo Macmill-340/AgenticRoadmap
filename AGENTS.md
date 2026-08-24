@@ -22,7 +22,7 @@ Do not skip the fetch list.
 
 ## What this is
 
-A phase-by-phase teaching path. Each `docs/*.md` is a **closed packet**: what, why, how, `uv pip install -r` lines, snippets, expected output, suggested filename. Someone should be able to implement from that file alone.
+A phase-by-phase teaching path. Each `docs/*.md` is a **closed packet**: what, why, how, `uv sync` / `uv add` lines, snippets, expected output, suggested filename. Someone should be able to implement from that file alone.
 
 Original handoff (do not treat as current API truth): `agentic-frameworks-teaching-roadmap.md`
 
@@ -79,9 +79,16 @@ Windows install:
 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
 
-Per phase-group: `uv venv`, then `uv pip install -r requirements.txt`. Run with `uv run python path\to\file.py`.
+Each `agents/*` folder is a real uv project: `pyproject.toml` (direct deps) + committed `uv.lock` (exact pins) + `.venv/`.
 
-Never `pip install` (bare). Never `uv add` / `uv.lock` in this path. Pins live in `requirements.txt`.
+```powershell
+cd agents\foundation   # or llamaindex / langgraph
+uv sync                # first run: resolves, writes lock, creates .venv, installs
+uv add <package>       # mid-course: updates pyproject + lock + venv together
+uv run python path\to\file.py
+```
+
+Never bare `pip install`. The root `pyproject.toml` is an **IDE shim** — no dependencies, no `[tool.uv.workspace]`; never `uv add` / `uv sync` at the repo root. Real projects live in `agents/*`. Commit `uv.lock` changes alongside packet/doc changes.
 
 Isolated projects (skeletons exist; learner writes the `.py` files):
 
@@ -92,7 +99,7 @@ Isolated projects (skeletons exist; learner writes the `.py` files):
 | `agents/langgraph/` | 7, 7b, 9 | `07_graph.py`, `07b_multi_agent.py`, `09_conventions.py` |
 | `agents/smolagents/` | 8 optional | folder created only when Phase 8 is written |
 
-Per group: `uv venv`, then `uv pip install -r requirements.txt`. Run with `uv run python path\to\file.py`.
+Each folder: `uv sync` when you reach its group, then `uv run python path\to\file.py`.
 
 ## Layout
 

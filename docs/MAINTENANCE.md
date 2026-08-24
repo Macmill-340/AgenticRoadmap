@@ -8,7 +8,7 @@ A new session writing any later phase **must re-fetch official docs**. Do not tr
 
 1. Fetch the URLs for the batch you are writing. If a URL 404s, open that site's `llms.txt` / section index and find the replacement. Do not invent URLs.
 2. Confirm imports against the **installed pin**, not the docs date. Especially LangGraph.
-3. Pin in `requirements.txt`. Install with `uv venv` + `uv pip install -r requirements.txt`. No `uv add` / `uv.lock`.
+3. Each `agents/*` folder is a uv project: direct deps in `pyproject.toml`, exact pins in the committed `uv.lock`. Set up with `uv sync`, extend with `uv add`. The root `pyproject.toml` is an IDE shim (no deps) — never `uv add` / `uv sync` there.
 4. Check LangGraph + `llama-index-core` + `litellm` changelogs since the last `Last grounded` date.
 5. Defaults: LiteLLM → Gemini for chat; HuggingFace `all-MiniLM-L6-v2` for embeddings. Ollama optional.
 6. Pedagogy lock: see `AGENTS.md`.
@@ -89,7 +89,7 @@ A new session writing any later phase **must re-fetch official docs**. Do not tr
 | OpenAI official loop | Responses API | This course uses Chat Completions via LiteLLM until Phase 9 |
 | Chat default | LiteLLM `gemini/gemini-2.5-flash` | Ollama as required |
 | Embeddings | HuggingFace `all-MiniLM-L6-v2` | Ollama `nomic-embed-text` |
-| Install | `uv pip install -r requirements.txt` | `uv add` / `uv.lock` |
+| Install | `uv sync` / `uv add` per `agents/*` uv project | bare pip; freeze-into-requirements; root uv workspace / shared lock |
 | LiteLLM | Python SDK only (`litellm`) | `litellm[proxy]` |
 | LlamaIndex defaults | `Settings.llm` / `Settings.embed_model` must be set | relying on defaults |
 | HITL | `interrupt()` + `Command(resume=...)` | `input()` inside a node |
