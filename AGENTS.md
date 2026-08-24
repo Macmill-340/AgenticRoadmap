@@ -24,7 +24,7 @@ Do not skip the fetch list.
 
 A phase-by-phase teaching path. Each `docs/*.md` is a **closed packet**: what, why, how, `uv sync` / `uv add` lines, snippets, expected output, suggested filename. Someone should be able to implement from that file alone.
 
-Original handoff (do not treat as current API truth): `agentic-frameworks-teaching-roadmap.md`
+Original handoff (do not treat as current API truth): `agentic-frameworks-teaching-roadmap.md` (local only — not in the repo)
 
 ## Frameworks (only these)
 

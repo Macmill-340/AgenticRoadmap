@@ -2,7 +2,7 @@
 
 Last grounded: 2026-08-23
 
-A new session writing any later phase **must re-fetch official docs**. Do not treat this file, prior chat, or `agentic-frameworks-teaching-roadmap.md` as API truth.
+A new session writing any later phase **must re-fetch official docs**. Do not treat this file, prior chat, or `agentic-frameworks-teaching-roadmap.md` (local only — not in the repo) as API truth.
 
 ## Standing rules
 
