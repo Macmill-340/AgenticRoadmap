@@ -19,13 +19,13 @@ uv sync
 Suggested file: `agents/foundation/02_tool_loop.py`  
 Mode: **raw-first**. This is the phase every later framework explanation rests on. Keep the loop small enough to hold in your head. No streaming, no retries, no multi-agent.
 
-## What
+## What you'll build
 
 Hand-write: messages + tool schemas → `litellm.completion` proposes a call → your code runs it → result goes back as `role: "tool"` → repeat, with `max_steps` that **raises**.
 
-## Why
+## Why it matters
 
-Every later framework (LlamaIndex `FunctionAgent`, LangGraph `ToolNode`) is this loop. If you skip it, those APIs stay magic.
+Every later framework (LlamaIndex `FunctionAgent`, LangGraph `ToolNode`) is this loop. Skip it and those APIs stay magic forever.
 
 **API: Chat Completions shape**, not the Responses API. Official OpenAI docs now lead with Responses (`function_call` / `function_call_output`). LiteLLM returns the Chat Completions object (`choices[0].message.tool_calls`). Responses is Phase 9.
 
@@ -47,7 +47,7 @@ The loop = **messages + schemas → call → run → append → repeat**.
 4. Else: print answer and stop
 5. `max_steps` exceeded → raise
 
-## Official sources
+## Official docs
 
 - LiteLLM: https://docs.litellm.ai/docs/
 - LiteLLM Gemini: https://docs.litellm.ai/docs/providers/gemini
@@ -295,7 +295,7 @@ OpenAI Chat Completions and Anthropic are **not** interchangeable. LiteLLM hides
 
 ---
 
-## Engineer extras (short)
+## Worth knowing
 
 **Hot-swap.** Change `MODEL`. Set the matching env key (`OPENAI_API_KEY`, or Ollama `api_base`). The loop stays.
 
@@ -309,7 +309,7 @@ Do not add streaming or retries in this file. Do not start the LiteLLM proxy.
 
 ---
 
-## Suggested final file shape
+## Your finished file
 
 `agents/foundation/02_tool_loop.py` — `MODEL`, `TOOLS`, `AddArgs`, `run_add`, `run_agent`, `if __name__`. Roughly 60–80 lines.
 

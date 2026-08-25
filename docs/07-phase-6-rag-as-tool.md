@@ -17,11 +17,11 @@ No new packages. Same `pyproject.toml`.
 Suggested file: `agents/llamaindex/06_rag_as_tool.py`  
 Mode: **glue**. Almost no new code — its value is two builds clicking together. Keep it short.
 
-## What
+## What you'll build
 
 Wrap the Phase 4 query engine as one plain function with a hand-written JSON schema, drop it into the Phase 2 loop next to `add`, and watch the model choose: retrieve from notes, do arithmetic, or just answer.
 
-## Why
+## Why it matters
 
 This is the payoff of the whole first half. Phase 4's maps-back table comes due: "Phase 6 — this query engine becomes a tool in `run_agent`". After this file, "RAG agent" is no longer a framework product; it is your loop plus one more entry in `TOOLS`. This is also, verbatim, the production hybrid pattern you will re-see in Phase 7 as an `@tool` inside LangGraph.
 
@@ -46,12 +46,12 @@ RAG is a **tool**, not the agent.
 
 Copy both halves into this file — **do not import across venvs** (`foundation` and `llamaindex` are separate projects by design).
 
-## Official sources
+## Official docs
 
 - LiteLLM Gemini: https://docs.litellm.ai/docs/providers/gemini
 - LlamaIndex + Chroma integration: https://docs.llamaindex.ai/en/stable/integrations/vector_stores/chromaindexdemo/
 
-## Concept
+## The big picture
 
 One loop, three exits: arithmetic → `add`; notes → `search_notes`; neither → answer directly. The model decides from schemas alone.
 
@@ -192,13 +192,13 @@ That's the whole phase. If you feel like adding memory or a second retriever —
 | `ValueError` / dimension mismatch on load | Collection was built with different embeddings. Delete `chroma_db/`, rerun Phase 4 build. |
 | `OPENAI_API_KEY` error | Settings lines not at top before any index/query call. |
 
-## Engineer extras (short)
+## Worth knowing
 
 - **Tool results are strings.** `str(resp)` keeps the loop provider-agnostic — same shape whether the tool is math, HTTP, or retrieval.
 - **Routing quality = description quality.** Before blaming the model, reread your schema descriptions out loud.
 - **This exact seam is Phase 7.** There, the loop becomes a graph, the dispatch becomes `ToolNode`, and this same function gets wrapped with `@tool`. Nothing conceptual is added — only infrastructure.
 
-## Do not
+## Don't add yet
 
 - No ChatEngine, no `FunctionAgent`, no LlamaIndex agent APIs.
 - No LangGraph yet.
@@ -211,7 +211,7 @@ Put **three of your own** short `.txt` files in `data/` — real ones: class not
 
 Done when it retrieves for the first, answers plainly for the second, and never treats `search_notes` as mandatory. Skip it or invent your own scenario — that is the point.
 
-## Suggested final file shape
+## Your finished file
 
 `agents/llamaindex/06_rag_as_tool.py` — env + Settings, engine build, `search_notes`, `SEARCH_TOOL` + `SearchArgs`, copied `add` pieces, unified `run_agent`, demo `__main__`. Roughly 100–120 lines (most of it copied from earlier phases — that is the point).
 

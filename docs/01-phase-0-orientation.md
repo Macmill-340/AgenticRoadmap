@@ -16,13 +16,13 @@ uv sync
 Suggested file: `agents/foundation/00_orientation.py`  
 Mode: **abstraction**, ~20 lines, not graded.
 
-## What
+## What you'll run
 
-Run a LlamaIndex `FunctionAgent` with **one** tool through LiteLLM → Gemini. See that a model can *choose* to call your function.
+A LlamaIndex `FunctionAgent` with **one** tool, through LiteLLM → Gemini. The only thing to notice: the model *chose* to call your function.
 
-## Why
+## Why it matters
 
-Later phases explain internals against a live picture, not a slide. This is not a tutorial. Do not add error handling, RAG, or a second tool.
+Everything later gets explained against something you've watched run, not a slide. Keep it to ~20 lines: no error handling, no RAG, no second tool.
 
 **Not `AgentWorkflow`.** Official one-tool starter is `FunctionAgent`. `AgentWorkflow` is for multiple agents (Phase 7b).
 
@@ -38,13 +38,13 @@ An agent = **model + tools + a loop**.
 4. Ask a question
 5. Print the answer
 
-## Official sources
+## Official docs
 
 - Building an agent: https://docs.llamaindex.ai/en/stable/understanding/agent/
 - LlamaIndex LiteLLM: https://docs.llamaindex.ai/en/stable/integrations/llm/litellm/
 - LiteLLM Gemini: https://docs.litellm.ai/docs/providers/gemini
 
-## Concept (one paragraph)
+## The big picture
 
 An agent is an LLM plus tools plus a loop: the model either answers or emits a structured call; your code runs the function; the result goes back; repeat until it answers. Here the framework owns the loop. Phase 2 will make you own it.
 

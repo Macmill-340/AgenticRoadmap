@@ -19,11 +19,11 @@ No new packages. `sentence-transformers` and `chromadb` are already there.
 Suggested file: `agents/llamaindex/05_rag_decomposed.py`  
 Mode: **decompose**. No LlamaIndex in this file. Every Phase 4 one-liner becomes a function you wrote.
 
-## What
+## What you'll build
 
 Rebuild the whole pipeline with your own hands: read the files, chunk on a character budget, embed chunks with MiniLM (`sentence_transformers` directly), store **your own vectors** in the raw Chroma client, embed the query, take nearest neighbors, stuff them into a prompt, and generate via LiteLLM. Then break it once (no overlap), fix it (overlap), and time embedding.
 
-## Why
+## Why it matters
 
 Phase 4 gave you five names and five one-liners. Until you write each stage, `index.as_query_engine()` is a spell. This is the same move as Phase 2 after Phase 0 — one internals pass, then stop. After this, every RAG framework conversation is "which stage did they tune?".
 
@@ -50,14 +50,14 @@ Phase 4's one-liners are these functions.
 
 Not here on purpose: no agent loop (Phase 6 glues that), no rerank (done in 4).
 
-## Official sources
+## Official docs
 
 - Chroma getting started (clients, add/query shapes): https://docs.trychroma.com/docs/overview/getting-started
 - LiteLLM completion: https://docs.litellm.ai/docs/
 - Async in Python (concurrency vs parallelism): https://docs.llamaindex.ai/en/stable/getting_started/async_python/
 - What LlamaIndex's splitter does for you (compare after building yours): https://docs.llamaindex.ai/en/stable/module_guides/loading/node_parsers/
 
-## Concept
+## The big picture
 
 Same five stages as Phase 4. The only change: each box is now *yours*.
 
@@ -124,7 +124,7 @@ hits = [c for c in chunks_overlap if "12 February 2024" in c]
 print(len(hits), "chunk(s) contain the full date")
 ```
 
-**Expected:** at least one chunk holds the whole sentence. That is the entire argument for overlap — seen, not asserted. (If size 80 already kept the date intact on your machine, drop to `size=60, overlap=30` and see it split, then heal.)
+**Expected:** at least one chunk holds the whole sentence. That's the whole argument for overlap — watch it fail, then watch it work. (If size 80 already kept the date intact on your machine, drop to `size=60, overlap=30` and see it split, then heal.)
 
 Note the tradeoff you just paid: more chunks, duplicated text, bigger index. There is no free lunch knob.
 
@@ -184,6 +184,19 @@ print(resp.choices[0].message.content)
 
 ## Segment 6 — Deepening: async timing (honest version)
 
+### Async in 60 seconds
+
+`async def` marks a function that can **pause**. When it hits `await`, it hands control back to the event loop, which runs something else and comes back later. That is *concurrency* (overlapping waits), not *parallelism* (simultaneous work). Perfect when the wait is external — an HTTP call, a database. Useless for pure CPU work, because CPU code never pauses to yield.
+
+The two tools this segment uses:
+
+```python
+await asyncio.gather(task_a, task_b)    # start both, resume when both finish
+await asyncio.to_thread(blocking_fn)    # push blocking code off the event loop's thread
+```
+
+That's all you need. The experiment below will show you when this helps and when it doesn't.
+
 Embedding calls are I/O-shaped, which is why everyone reaches for `asyncio.gather`. But MiniLM runs **on CPU**, and CPU work does not yield to the event loop. See both truths yourself:
 
 ```python
@@ -226,13 +239,13 @@ Token-vs-character, stated once: MiniLM truncates around **256 tokens** (~roughl
 | Fluent wrong answer | Junk or missing context stuffed in. Print the retrieved docs before blaming the model. |
 | `gather` shows no speedup | Expected on CPU. It is a pattern lesson, not a magic speedup lesson. |
 
-## Engineer extras (short)
+## Worth knowing
 
 - **Your splitter vs `SentenceSplitter`:** LlamaIndex's splits on sentence boundaries within a token budget. Yours cuts mid-word — feel why token-aware splitters exist.
 - **IDs carry provenance.** `fname::j` cost nothing and makes debugging retrieval possible. Do this in real projects.
 - **Distances ≠ probabilities.** Never threshold cosine distances against cross-encoder scores (Phase 4) or confidences. Different scales, different jobs.
 
-## Do not
+## Don't add yet
 
 - No LlamaIndex imports in `05_rag_decomposed.py`.
 - No reranker here — Phase 4 owns it.
@@ -240,7 +253,7 @@ Token-vs-character, stated once: MiniLM truncates around **256 tokens** (~roughl
 - No BM25/hybrid/graph RAG.
 - Not a milestone guide: no `## Try this`.
 
-## Suggested final file shape
+## Your finished file
 
 `agents/llamaindex/05_rag_decomposed.py` — env/path constants, `texts` loader, `chunk()`, model + collection setup, ingest block, retrieve-and-generate function, timing block, groundedness demo behind `if __name__`. Roughly 90–120 lines.
 

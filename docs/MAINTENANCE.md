@@ -16,6 +16,7 @@ A new session writing any later phase **must re-fetch official docs**. Do not tr
 8. Do not promote a deferred topic (MCP, LangSmith, evals, …) into a new phase without an explicit request.
 9. Do not install `litellm[proxy]`.
 10. After the batch: set `Last grounded: YYYY-MM-DD` on every file you wrote, and update `docs/STATUS.md`.
+11. Style pass before done: every guide follows the writing style in `AGENTS.md` — content-bearing headers, no banned words, expected output after every code block.
 
 ## Always fetch (every batch)
 

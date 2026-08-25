@@ -22,7 +22,7 @@ Do not skip the fetch list.
 
 ## What this is
 
-A phase-by-phase teaching path. Each `docs/*.md` is a **self-contained guide**: what, why, how, `uv sync` / `uv add` lines, snippets, expected output, suggested filename. Someone should be able to implement from that file alone.
+A phase-by-phase teaching path. Each `docs/*.md` is a **self-contained guide** — what you'll build, why it matters, how to build it, `uv sync` / `uv add` lines, snippets, expected output, suggested filename. Someone should be able to implement from that file alone.
 
 Original handoff (do not treat as current API truth): `agentic-frameworks-teaching-roadmap.md` (local only — not in the repo)
 
@@ -49,6 +49,17 @@ Original handoff (do not treat as current API truth): `agentic-frameworks-teachi
 - Every phase guide gets a `## Skeleton` after Why: one recitable sentence (e.g. "an agent = model + tools + a loop") + 4–6 numbered ingredient steps. README's `## Spine` collects one line per phase — append when the guide is written.
 - Phase 7b (multi-agent) comes **after** a working single-agent graph, not earlier.
 - MCP, LangSmith, evals, A2A, Deep Agents stay out of the course until you explicitly ask for them — and then as a short pointers-only appendix, not new phases.
+
+## Writing style (every guide)
+
+Write for one reader: a smart beginner building along in a terminal.
+
+- Headers say what's inside: "What you'll build", "Why it matters", "The big picture", "Don't add yet", "Worth knowing", "Your finished file". Never bare "What" / "Why" / "Concept".
+- Short sentences. Second person ("you"). Concrete verbs over abstractions.
+- Banned words: packet, cold-start, parking lot, shim, load-bearing, leverage, robust, seamless, delve. "Guide" is the standing noun for a phase doc.
+- Every code block is followed by what you should see when you run it.
+- Python topics are taught just-in-time: a short box with example code, inside the guide that first needs the topic (async in Phase 5, decorators in Phase 7). setup.md carries the "Coming from pip?" and "Python you should be comfortable with" sections.
+- Read the section aloud before marking it done. If it sounds like a changelog or a slide, rewrite it.
 
 ## Try this (milestones)
 

@@ -18,15 +18,15 @@ No new packages. Same `pyproject.toml` as Phase 2.
 Suggested file: `agents/foundation/03_state.py`  
 Mode: **raw**. Direct extension of Phase 2. No Memory class, no framework.
 
-## What
+## What you'll build
 
 Make Phase 2's throwaway `messages` list into explicit **state**: conversation history plus a small facts dict, rendered into the system prompt on every turn — and kept under an artificial token budget with two strategies: **cap** (drop oldest) vs **summarize** (compress oldest).
 
-## Why
+## Why it matters
 
 Phase 2's `run_agent` built `messages` inside the function. When it returned, everything the agent knew died. Real agents carry context across turns, and every framework memory feature (`ChatMemoryBuffer`, LangGraph checkpoints, whatever ships next year) reduces to the same thing: **data you hold yourself, rendered into the prompt**. Build it once by hand so those abstractions are legible later.
 
-Foreshadow (one paragraph, no imports): LangGraph's `MessagesState` stores a message list whose reducer decides overwrite-vs-append on updates — exactly the choice you make manually here when you decide whether new turns replace or extend `state["messages"]`. Phase 7 makes that explicit.
+One thing to plant for later: LangGraph's `MessagesState` stores a message list whose reducer decides overwrite-vs-append on updates — exactly the choice you make by hand here when you decide whether new turns replace or extend `state["messages"]`. Phase 7 makes that explicit.
 
 ## Skeleton
 
@@ -37,13 +37,13 @@ Memory = **a dict you render into the prompt**.
 3. Call the Phase 2 loop on that state
 4. If over budget: cap or summarize
 
-## Official sources
+## Official docs
 
 - LiteLLM token usage & helpers: https://docs.litellm.ai/docs/completion/token_usage
 - LiteLLM Gemini provider: https://docs.litellm.ai/docs/providers/gemini
 - LangGraph Graph API (reducers / `MessagesState`, foreshadow only): https://docs.langchain.com/oss/python/langgraph/graph-api
 
-## Concept
+## The big picture
 
 State = `{"messages": [...], "facts": {...}}`. History gives the model continuity of conversation; facts give it durability that survives trimming. The system prompt is a **rendering** of that state, rebuilt every call. Nothing else.
 
@@ -305,14 +305,14 @@ Print `len(state["messages"])` before/after trimming so the mechanism is visible
 
 ---
 
-## Engineer extras (short)
+## Worth knowing
 
 - **Render every call.** `build_messages(state)` recomputes the system prompt each `completion()` — never cache it. Facts change mid-loop.
 - **Overwrite vs append is yours.** Here you always append to `messages` (that is `add_messages` behavior in Phase 7). If you ever assign instead of append, you have implemented the default-overwrite reducer — feel the difference once.
 - **Rough vs exact counts.** `token_counter` uses a tokenizer approximation for Gemini; exact billing numbers come from `usage` on the response. Budget checks want approximations; bills want `usage`.
 - **Windows note:** none yet. No async, no subprocess in this file.
 
-## Do not
+## Don't add yet
 
 - No Memory/chat-buffer classes, no LlamaIndex, no LangGraph import.
 - No vector memory or embeddings — retrieval is Phases 4–6.
@@ -320,7 +320,7 @@ Print `len(state["messages"])` before/after trimming so the mechanism is visible
 - No streaming, retries, or persistence-to-disk.
 - Do not claim a real Gemini overflow; the budget is synthetic.
 
-## Suggested final file shape
+## Your finished file
 
 `agents/foundation/03_state.py` — `MODEL`, `TOKEN_BUDGET`, `AgentState`, `RememberArgs`/`AddArgs`, `TOOLS` (add + remember), `render_system`, `build_messages`, `over_budget`, `enforce_cap`, `enforce_summarize`, `run_agent`, `demo`, `__main__`. Roughly 90–110 lines.
 

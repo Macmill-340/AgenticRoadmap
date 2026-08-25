@@ -22,13 +22,13 @@ First run downloads ~90 MB (MiniLM) plus a tiny cross-encoder later. One time, C
 Suggested file: `agents/llamaindex/04_rag_fast.py`  
 Mode: **abstraction-first**. See the whole pipeline work before Phase 5 opens the hood. Default settings, no tuning beyond the one deepening (rerank).
 
-## What
+## What you'll build
 
 Working RAG end-to-end in one sitting: load `data/*.txt` → chunk → embed (MiniLM) → persist (Chroma) → retrieve top-k → generate (Gemini via LiteLLM) → then rerank the retrieved nodes with a local cross-encoder and watch the ordering change.
 
-## Why
+## Why it matters
 
-You need a mental map worth having before decomposing anything. After this phase you can point at every stage and name it. Phase 5 rebuilds each stage by hand; Phase 6 plugs this exact engine into your Phase 2 loop.
+You can't take apart what you've never seen run. After this phase you can point at every stage and name it; Phase 5 then rebuilds each one by hand, and Phase 6 plugs this exact engine into your Phase 2 loop.
 
 ## Skeleton
 
@@ -43,7 +43,7 @@ RAG = **load → embed → store → retrieve → generate**.
 
 ## You already built this
 
-This guide keeps a deliberately tight scope. What carries over, and where it comes back:
+This phase is small on purpose. What carries over, and where it comes back:
 
 | You already own | In this guide | Comes back as a build |
 |---|---|---|
@@ -54,7 +54,7 @@ This guide keeps a deliberately tight scope. What carries over, and where it com
 
 Rule of thumb for the rest of the course: **LlamaIndex retrieves; your loop (later LangGraph) orchestrates.**
 
-## Official sources
+## Official docs
 
 - Configuring Settings: https://docs.llamaindex.ai/en/stable/module_guides/supporting_modules/settings/
 - Introduction to RAG (five stages): https://docs.llamaindex.ai/en/stable/understanding/rag/
@@ -64,9 +64,9 @@ Rule of thumb for the rest of the course: **LlamaIndex retrieves; your loop (lat
 - Node postprocessor modules (rerankers): https://docs.llamaindex.ai/en/stable/module_guides/querying/node_postprocessors/node_postprocessors/
 - Chroma persistent client: https://docs.trychroma.com/docs/overview/getting-started
 
-## Concept
+## The big picture
 
-Five stages, once, in one diagram. Everything later hangs off these names.
+Five stages, in one diagram. Everything later hangs off these names.
 
 ```mermaid
 flowchart LR
@@ -82,7 +82,7 @@ flowchart LR
   I --> J[answer]
 ```
 
-**Rerank in one paragraph:** vector search is a *bi-encoder* — query and chunk embedded separately, ranked by cosine. Fast, but word overlap can float a chunk too high. A reranker is a *cross-encoder* — it reads `(query, chunk)` together and rescores relevance. Industry default: retrieve wide (top 5–10), keep few (top 2–3) after rerank. Here: `SentenceTransformerRerank` with `cross-encoder/ms-marco-MiniLM-L-2-v2` — local, CPU, no API key. (Cohere/Jina rerankers are hosted; `LLMRerank` burns tokens. Not used.)
+**Rerank, briefly:** vector search is a *bi-encoder* — query and chunk embedded separately, ranked by cosine. Fast, but word overlap can float a chunk too high. A reranker is a *cross-encoder* — it reads `(query, chunk)` together and rescores relevance. Industry default: retrieve wide (top 5–10), keep few (top 2–3) after rerank. Here: `SentenceTransformerRerank` with `cross-encoder/ms-marco-MiniLM-L-2-v2` — local, CPU, no API key. (Cohere/Jina rerankers are hosted; `LLMRerank` burns tokens. Not used.)
 
 ---
 
@@ -220,13 +220,13 @@ print(engine_reranked.query(QUERY))
 | Chroma telemetry warnings | Harmless noise; ignore. |
 | Zero documents loaded | Wrong `DATA_DIR`; print it. Files live in repo-root `data/`. |
 
-## Engineer extras (short)
+## Worth knowing
 
 - **`similarity_top_k` lives on retriever/query engine**, not the index — widen there, not by re-indexing.
 - **Scores are not probabilities.** Cosine and cross-encoder numbers aren't comparable; never mix them in one threshold.
 - **Chunk defaults are fine today.** `Settings.chunk_size` / `chunk_overlap` exist; Phase 5 makes them visible by hand.
 
-## Do not
+## Don't add yet
 
 - No ChatEngine / LlamaIndex memory / multi-turn here (that hides Phase 3).
 - No wrapping the engine as a tool yet — that is all of Phase 6.
@@ -234,7 +234,7 @@ print(engine_reranked.query(QUERY))
 - No pinning by hand — the committed `uv.lock` pins everything; `uv add` when you need a new package.
 - Do not write `05_rag_decomposed.py` yet.
 
-## Suggested final file shape
+## Your finished file
 
 `agents/llamaindex/04_rag_fast.py` — env + Settings, `DATA_DIR`/`CHROMA_PATH`, load, build-or-reload Chroma index, plain query + score printout, rerank comparison, reranked query engine, `if __name__`. Roughly 70–90 lines.
 

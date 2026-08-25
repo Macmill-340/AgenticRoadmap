@@ -10,11 +10,11 @@ uv: none required (HF Spaces are the demo)
 Suggested file: none  
 Mode: **concept-only**. No neural nets. No training. No architecture diagrams.
 
-## What
+## What you'll see
 
-See the machine view of Phase 0: you type text, the model predicts **one next token at a time**, then stops.
+The machine view of Phase 0: you type text, the model predicts **one next token at a time**, then stops.
 
-## Why
+## Why it matters
 
 Phase 0 looked like a decision. It was next-token prediction, steered toward a tool schema. If that click happens now, every later framework is the same loop with nicer syntax.
 
@@ -29,7 +29,7 @@ A model only **picks the next token**.
 5. Repeat until stop
 6. Detokenize
 
-## Official / interactive sources
+## Official docs and demos
 
 - HF Agents Course — What are LLMs: https://huggingface.co/learn/agents-course/unit1/what-are-llms  
 - Tokenizer playground: https://huggingface.co/spaces/Xenova/the-tokenizer-playground  
@@ -112,11 +112,11 @@ Phase 0 used native tool-calling inside `FunctionAgent`. Phase 2 will write that
 
 ---
 
-## Interactive demo
+## Try it in the browser
 
-Use the HF tokenizer Space and the course page decoder — do not build a visualizer. Hosted Gemini will not show you raw next-token logits; that is fine for this phase.
+Play with the tokenizer Space and the course page's decoder — don't build anything. Hosted Gemini won't show you raw next-token logits; you don't need them yet.
 
-## Do not
+## What not to do
 
 - Implement softmax, attention, or training.
 - Treat greedy as “the model thinks.”

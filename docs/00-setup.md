@@ -6,13 +6,13 @@ Fetch before writing later phases: uv + LiteLLM + Gemini URLs in `docs/MAINTENAN
 Suggested file: `agents/foundation/pyproject.toml` (already exists; see section 3)  
 GitHub-facing overview lives in the root `README.md`; this file is the hands-on install guide.
 
-## What
+## What this sets up
 
-Install uv, a Gemini API key, and isolated venvs so later phases do not share dependency trees.
+uv installed, a free Gemini key in `.env`, and one isolated environment per phase group — so a broken dependency in one layer of the course can never take down another.
 
-## Why
+## Why separate environments
 
-LlamaIndex (Phases 4–6) and LangGraph (Phase 7+) pin different, sometimes conflicting packages. One global venv turns the lesson into an environment-debug session.
+LlamaIndex (phases 4–6) and LangGraph (phase 7+) pin different, sometimes conflicting packages. One shared environment turns every crash into a dependency hunt instead of a lesson.
 
 Chat goes through **LiteLLM → Gemini** (reliable tool-calling, no multi-GB local model). Embeddings later use HuggingFace MiniLM (~90 MB). Ollama is optional.
 
@@ -89,6 +89,30 @@ Never bare `pip install`.
 Keep **Settings → Project Structure → Use pyproject.toml-based project model** checked. PyCharm then shows the root module (docs, `data/`, README) plus one module per `agents/*` project.
 
 If the tree ever looks wrong — only subfolders visible, or an empty view: Project Structure → uncheck that box → select the module → **+ Add Content Root** → the repo root → OK → re-check the box. Attach `agents\<group>\.venv\Scripts\python.exe` as a Python SDK when you want per-folder interpreters.
+
+### Coming from pip?
+
+Three ideas cover everything this course does with uv:
+
+- A **virtual environment** (`.venv/`) is a private sandbox for one project's packages — same idea as `python -m venv`, just faster.
+- `pyproject.toml` says what you *want* (direct dependencies, loose names). `uv.lock` records what you *got* (every package resolved to an exact version, committed to git).
+- `uv sync` makes reality match the lock: installs what's missing, removes what's extra. `uv add <pkg>` updates the want-file and the lock in one step.
+
+That's the whole vocabulary. You'll never ask "should I freeze?" — the lock *is* the freeze.
+
+### Python you should be comfortable with
+
+The course assumes everyday Python: functions, dicts, lists, f-strings, `if __name__ == "__main__"`. Five things get a short refresher exactly where they first appear:
+
+| Topic | First used | The 10-second version |
+|---|---|---|
+| Type hints + `TypedDict` | Phase 3 | `state: dict[str, str]` — a dict with its key/value types spelled out |
+| `pydantic.BaseModel` | Phase 2 | a class whose fields validate data the moment you create it |
+| `pathlib.Path` | Phase 4 | file paths as objects; `Path(__file__).parent` is the folder this file lives in |
+| `async` / `await` | Phase 5 | taught properly in Phase 5's "Async in 60 seconds" |
+| Decorators (`@name`) | Phase 7 | taught in Phase 7, right before `@tool` |
+
+Nothing deeper is assumed.
 
 ## 4. Smoke-test LiteLLM + Gemini
 
