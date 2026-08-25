@@ -2,13 +2,13 @@
 
 Phase-by-phase path to becoming an agentic AI engineer. **Docs first — you write the Python.**
 
-Each phase is a closed packet in [`docs/`](docs/): what, why, how, exact install commands, snippets, expected output, and the filename you create. No framework hopping, no black boxes: every framework abstraction later in the path maps back to a loop you built by hand early.
+Each phase is a self-contained guide in [`docs/`](docs/): what, why, how, exact install commands, snippets, expected output, and the filename you create. No framework hopping, no black boxes: every framework abstraction later in the path maps back to a loop you built by hand early.
 
 ## The path
 
-Packets marked *pending* are written batch by batch, each grounded against current official docs first (see [`docs/MAINTENANCE.md`](docs/MAINTENANCE.md)).
+Guides marked *pending* are written batch by batch, each grounded against current official docs first (see [`docs/MAINTENANCE.md`](docs/MAINTENANCE.md)).
 
-| # | Topic | Mode | You write | Packet |
+| # | Topic | Mode | You write | Guide |
 |---|---|---|---|---|
 | — | Setup (uv, Gemini key, isolated uv projects) | — | `pyproject.toml` per folder (provided) | [`docs/00-setup.md`](docs/00-setup.md) — done |
 | 0 | Orientation: your first agent | guided demo | `00_orientation.py` | [`docs/01-phase-0-orientation.md`](docs/01-phase-0-orientation.md) — done |
@@ -35,14 +35,14 @@ Recite this after any break: one sentence per layer, then the recipe.
 - **RAG internals** — Phase 4's one-liners are just load / chunk / embed / query functions.
 - **RAG as a tool** — the engine becomes one more tool inside your Phase 2 loop.
 
-Later phases (LangGraph, multi-agent, conventions) append their line here as each packet is written.
+Later phases (LangGraph, multi-agent, conventions) append their line here as each guide is written.
 
 ## How to follow
 
 1. Do [`docs/00-setup.md`](docs/00-setup.md) end to end (~10 min): install uv, set a free Gemini key in `.env`.
-2. Open the next packet, create its file in the right folder, and work **one segment at a time**: implement → run → match the expected output → next segment.
-3. Every packet ends with checkpoint questions (answers included) — if you cannot answer them, rerun the segment.
-4. Milestone packets (2, 3, 6, 7/7b) end with an optional **Try this**: one small build of your own using what you just wrote. Skip it or invent something else — both are fine.
+2. Open the next guide, create its file in the right folder, and work **one segment at a time**: implement → run → match the expected output → next segment.
+3. Every guide ends with checkpoint questions (answers included) — if you cannot answer them, rerun the segment.
+4. Milestone guides (2, 3, 6, 7/7b) end with an optional **Try this**: one small build of your own using what you just wrote. Skip it or invent something else — both are fine.
 
 ## Stack defaults
 
@@ -73,15 +73,15 @@ Each folder is its own uv project: `pyproject.toml` lists direct deps, the commi
 ## Repo layout
 
 ```
-docs/      teaching packets + STATUS.md (progress cursor) + MAINTENANCE.md (research rules)
+docs/      teaching guides + STATUS.md (tracks where you are) + MAINTENANCE.md (research rules)
 agents/    uv skeletons — the .py files are yours to write
 data/      small local documents for the RAG phases
-AGENTS.md  cold-start packet for AI coding sessions that extend this corpus
+AGENTS.md  starting point for AI coding sessions that extend the course
 README.md  this file — learner entry point
 ```
 
-This corpus is built to grow through AI-assisted sessions: any new session starts from `AGENTS.md` → `docs/STATUS.md` → `docs/MAINTENANCE.md` and continues the next unchecked item, re-fetching official docs before writing.
+This repo is built to grow through AI-assisted sessions: any new session starts from `AGENTS.md` → `docs/STATUS.md` → `docs/MAINTENANCE.md` and continues the next unchecked item, re-fetching official docs before writing.
 
-## Deliberately not covered (parking lot)
+## What this course leaves out
 
-MCP, LangSmith/observability, evals/guardrails, A2A, Deep Agents, LlamaIndex Workflows — pointer-only appendix when it lands. Also out of the core path: LangChain-as-orchestration, Pydantic AI as a framework, and neural-network internals.
+Some things are worth knowing about but don't belong in the core path: MCP, LangSmith/observability, evals/guardrails, A2A, Deep Agents, and LlamaIndex Workflows. They'll get a short pointers-only appendix at the end — a place to start when you're curious, not extra phases to build. Also skipped on purpose: LangChain-as-orchestration, Pydantic AI as a framework, and neural-network internals.

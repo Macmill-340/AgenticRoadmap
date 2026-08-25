@@ -4,7 +4,7 @@ Last grounded: 2026-08-21
 Prereq files: `AGENTS.md`  
 Fetch before writing later phases: uv + LiteLLM + Gemini URLs in `docs/MAINTENANCE.md`  
 Suggested file: `agents/foundation/pyproject.toml` (already exists; see section 3)  
-GitHub-facing overview lives in the root `README.md`; this file is the hands-on install packet.
+GitHub-facing overview lives in the root `README.md`; this file is the hands-on install guide.
 
 ## What
 
@@ -18,7 +18,7 @@ Chat goes through **LiteLLM → Gemini** (reliable tool-calling, no multi-GB loc
 
 ## How to read a phase doc
 
-Each phase file is a closed packet. Implement **one segment**, run it, match expected output, then the next segment.
+Each phase file is a self-contained guide. Implement **one segment**, run it, match expected output, then the next segment.
 
 A new coding session: read `AGENTS.md` → `docs/STATUS.md` → `docs/MAINTENANCE.md` → the next phase doc.
 

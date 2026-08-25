@@ -17,7 +17,7 @@ uv sync
 ```
 
 Suggested file: `agents/foundation/02_tool_loop.py`  
-Mode: **raw-first**. This is the load-bearing phase. Keep the loop small enough to hold in your head. No streaming, no retries, no multi-agent.
+Mode: **raw-first**. This is the phase every later framework explanation rests on. Keep the loop small enough to hold in your head. No streaming, no retries, no multi-agent.
 
 ## What
 

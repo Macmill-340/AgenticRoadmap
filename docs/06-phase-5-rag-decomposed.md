@@ -238,7 +238,7 @@ Token-vs-character, stated once: MiniLM truncates around **256 tokens** (~roughl
 - No reranker here — Phase 4 owns it.
 - No agent loop, no tools — Phase 6.
 - No BM25/hybrid/graph RAG.
-- Not a milestone packet: no `## Try this`.
+- Not a milestone guide: no `## Try this`.
 
 ## Suggested final file shape
 

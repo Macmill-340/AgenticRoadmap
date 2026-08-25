@@ -43,9 +43,9 @@ RAG = **load → embed → store → retrieve → generate**.
 
 ## You already built this
 
-This packet is deliberately narrow. What carries over, and where it comes back:
+This guide keeps a deliberately tight scope. What carries over, and where it comes back:
 
-| You already own | In this packet | Comes back as a build |
+| You already own | In this guide | Comes back as a build |
 |---|---|---|
 | Phase 2 tool loop | **Not here.** RAG alone is one *step* inside such a loop, not the loop. | Phase 6 — this query engine becomes a tool in `run_agent` |
 | Phase 3 state (`messages` + `facts`) | **Not here.** No ChatEngine, no LlamaIndex memory — that would hide the dict you wrote. | Phase 7 — LangGraph `MessagesState` |

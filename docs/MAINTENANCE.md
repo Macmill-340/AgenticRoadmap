@@ -8,12 +8,12 @@ A new session writing any later phase **must re-fetch official docs**. Do not tr
 
 1. Fetch the URLs for the batch you are writing. If a URL 404s, open that site's `llms.txt` / section index and find the replacement. Do not invent URLs.
 2. Confirm imports against the **installed pin**, not the docs date. Especially LangGraph.
-3. Each `agents/*` folder is a uv project: direct deps in `pyproject.toml`, exact pins in the committed `uv.lock`. Set up with `uv sync`, extend with `uv add`. The root `pyproject.toml` is an IDE shim (no deps) — never `uv add` / `uv sync` there.
+3. Each `agents/*` folder is a uv project: direct deps in `pyproject.toml`, exact pins in the committed `uv.lock`. Set up with `uv sync`, extend with `uv add`. The root `pyproject.toml` exists only so PyCharm shows the repo root (no dependencies) — never `uv add` / `uv sync` there.
 4. Check LangGraph + `llama-index-core` + `litellm` changelogs since the last `Last grounded` date.
 5. Defaults: LiteLLM → Gemini for chat; HuggingFace `all-MiniLM-L6-v2` for embeddings. Ollama optional.
 6. Pedagogy lock: see `AGENTS.md`.
 7. Windows: no WSL assumed. `asyncio` HTTP is fine. Subprocess tools: one-line Proactor note.
-8. Do not expand the parking lot into new phases without an explicit request.
+8. Do not promote a deferred topic (MCP, LangSmith, evals, …) into a new phase without an explicit request.
 9. Do not install `litellm[proxy]`.
 10. After the batch: set `Last grounded: YYYY-MM-DD` on every file you wrote, and update `docs/STATUS.md`.
 
@@ -71,13 +71,13 @@ A new session writing any later phase **must re-fetch official docs**. Do not tr
 - https://docs.langchain.com/oss/python/langchain/multi-agent/handoffs
 - https://docs.llamaindex.ai/en/stable/understanding/agent/multi_agent/
 
-## Batch 4 — Phases 8–9 + parking lot
+## Batch 4 — Phases 8–9 + advanced-topics appendix
 
 - https://huggingface.co/docs/smolagents/en/index
 - https://huggingface.co/docs/smolagents/en/guided_tour
 - https://platform.openai.com/docs/guides/function-calling
 - https://docs.langchain.com/oss/python/langchain/structured-output
-- Parking-lot only (fetch if writing the appendix): LlamaIndex MCP, LangGraph MCP, LangSmith observability, Ollama OpenAI compat
+- Advanced-topics appendix only (fetch these only if writing it): LlamaIndex MCP, LangGraph MCP, LangSmith observability, Ollama OpenAI compat
 
 ## Known API drift (as of 2026-08-21)
 
