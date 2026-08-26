@@ -466,6 +466,33 @@ wheels = [
 ]
 
 [[package]]
+name = "course-llamaindex"
+version = "0.1.0"
+source = { virtual = "." }
+dependencies = [
+    { name = "chromadb" },
+    { name = "litellm" },
+    { name = "llama-index-core" },
+    { name = "llama-index-embeddings-huggingface" },
+    { name = "llama-index-llms-litellm" },
+    { name = "llama-index-vector-stores-chroma" },
+    { name = "python-dotenv" },
+    { name = "sentence-transformers" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "chromadb" },
+    { name = "litellm" },
+    { name = "llama-index-core" },
+    { name = "llama-index-embeddings-huggingface" },
+    { name = "llama-index-llms-litellm" },
+    { name = "llama-index-vector-stores-chroma" },
+    { name = "python-dotenv" },
+    { name = "sentence-transformers" },
+]
+
+[[package]]
 name = "cuda-bindings"
 version = "13.3.1"
 source = { registry = "https://pypi.org/simple" }
@@ -1275,33 +1302,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/74/f8/cb9968d2453b16dc8951b8542ea827a59b937ecb0aa1a06d3ca418a311f4/llama_index_workflows-2.23.3.tar.gz", hash = "sha256:fba140ea4d4aa7e7ca58f3ddc2526b92bfb31bfaf45ab2b4345401ae527061b4", size = 138873, upload-time = "2026-08-22T14:26:19.13Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/bf/35/27a651cee0c4e4540a5b65aaec1293f52e153b870accab7f8472d035809b/llama_index_workflows-2.23.3-py3-none-any.whl", hash = "sha256:d7ad51363ba4817b4140526c5e785d2f143861f618823456e2f379adfe0b321b", size = 166772, upload-time = "2026-08-22T14:26:17.911Z" },
-]
-
-[[package]]
-name = "llamaindex"
-version = "0.1.0"
-source = { virtual = "." }
-dependencies = [
-    { name = "chromadb" },
-    { name = "litellm" },
-    { name = "llama-index-core" },
-    { name = "llama-index-embeddings-huggingface" },
-    { name = "llama-index-llms-litellm" },
-    { name = "llama-index-vector-stores-chroma" },
-    { name = "python-dotenv" },
-    { name = "sentence-transformers" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "chromadb" },
-    { name = "litellm" },
-    { name = "llama-index-core" },
-    { name = "llama-index-embeddings-huggingface" },
-    { name = "llama-index-llms-litellm" },
-    { name = "llama-index-vector-stores-chroma" },
-    { name = "python-dotenv" },
-    { name = "sentence-transformers" },
 ]
 
 [[package]]
