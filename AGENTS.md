@@ -92,11 +92,29 @@ powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | ie
 
 Each `agents/*` folder is a real uv project: `pyproject.toml` (direct deps) + committed `uv.lock` (exact pins) + `.venv/`.
 
+**Windows (PowerShell):**
+
 ```powershell
-cd agents\foundation   # or llamaindex / langgraph
+if (Test-Path agents\foundation) { cd agents\foundation }   # or llamaindex / langgraph
 uv sync                # first run: resolves, writes lock, creates .venv, installs
+.venv\Scripts\activate
+if (-not (Test-Path <phase_file>.py)) { New-Item -ItemType File <phase_file>.py }  # e.g. 00_orientation.py — creates only if missing
+```
+
+**macOS/Linux:**
+
+```bash
+[ -d agents/foundation ] && cd agents/foundation
+uv sync
+source .venv/bin/activate
+touch <phase_file>.py   # creates only if missing
+```
+
+The last line is idempotent — safe to re-run on later sessions. New terminals (VS Code, Cursor) usually open at the repo root; PyCharm sometimes restores already inside the folder. That `if` / `[ -d ... ] &&` does the right thing either way.
+
+```powershell
+uv run python path\to\file.py  # works with or without activate; open the .py in your IDE
 uv add <package>       # mid-course: updates pyproject + lock + venv together
-uv run python path\to\file.py
 ```
 
 Never bare `pip install`. The root `pyproject.toml` exists only so PyCharm shows the repo root — no dependencies, no `[tool.uv.workspace]`; never `uv add` / `uv sync` at the repo root. Real projects live in `agents/*`. Commit `uv.lock` changes alongside doc changes.
@@ -110,7 +128,7 @@ Isolated projects (skeletons exist; learner writes the `.py` files):
 | `agents/langgraph/` | 7, 7b, 9 | `07_graph.py`, `07b_multi_agent.py`, `09_conventions.py` |
 | `agents/smolagents/` | 8 optional | folder created only when Phase 8 is written |
 
-Each folder: `uv sync` when you reach its group, then `uv run python path\to\file.py`.
+Each folder: `uv sync` when you reach its group, then `uv run python path\to\file.py` (activate first if you want the IDE to see the venv: `.venv\Scripts\activate` on Windows, `source .venv/bin/activate` on macOS/Linux).
 
 ## Layout
 
@@ -131,6 +149,7 @@ AGENTS.md        starting point for AI sessions extending the course
 - Wrap `interrupt()` in bare `try/except`. HITL is `interrupt()` + `Command(resume=...)`, not `input()`.
 - Commit secrets. Use `.env`.
 - Do not write the learner's `.py` files — every guide tells the learner which file to create. STATUS tracks docs; learners track code.
+- Never write or commit session dumps / chat exports (`session-ses_*.md`, transcripts). Delete them if they appear — do not add them to `.gitignore` to hide them.
 
 ## Batches
 

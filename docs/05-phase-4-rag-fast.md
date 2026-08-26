@@ -12,10 +12,27 @@ Fetch before writing:
 - https://docs.trychroma.com/docs/overview/getting-started  
 uv (new project group):
 
+**Windows (PowerShell):**
+
 ```powershell
-cd agents\llamaindex
+if (Test-Path agents\llamaindex) { cd agents\llamaindex }
 uv sync
+.venv\Scripts\activate
+if (-not (Test-Path 04_rag_fast.py)) { New-Item -ItemType File 04_rag_fast.py }
 ```
+
+**macOS/Linux:**
+
+```bash
+[ -d agents/llamaindex ] && cd agents/llamaindex
+uv sync
+source .venv/bin/activate
+touch 04_rag_fast.py
+```
+
+Open `04_rag_fast.py` in your IDE — you will write the segments below there. The last line creates the file only if it does not already exist, so the same block is safe to re-run.
+
+New terminals (VS Code, Cursor) usually open at the repo root; PyCharm sometimes restores already inside the folder. That `if` / `[ -d ... ] &&` does the right thing either way.
 
 First run downloads ~90 MB (MiniLM) plus a tiny cross-encoder later. One time, CPU.
 

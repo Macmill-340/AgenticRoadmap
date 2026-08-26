@@ -58,11 +58,26 @@ Do **not** install `litellm[proxy]`. That is a gateway server. This path uses th
 
 Each `agents/*` folder is its own uv project: `pyproject.toml` lists direct dependencies, the committed `uv.lock` pins every resolved version, and `.venv/` is created on demand. Set up a folder only when you reach its phase-group.
 
+**Windows (PowerShell):**
+
 ```powershell
 # Phases 0–3 (do this before Phase 0)
-cd agents\foundation
-uv sync          # resolves, writes/uses uv.lock, creates .venv, installs exactly that
+if (Test-Path agents\foundation) { cd agents\foundation }
+uv sync                # resolves, writes/uses uv.lock, creates .venv, installs exactly that
+.venv\Scripts\activate
 ```
+
+**macOS/Linux:**
+
+```bash
+[ -d agents/foundation ] && cd agents/foundation
+uv sync
+source .venv/bin/activate
+```
+
+You should see `(.venv)` at the start of the prompt. `uv` also supports `uv run` without activating — both work; activation just lets the IDE see the same interpreter.
+
+New terminals (VS Code, Cursor) usually open at the repo root; PyCharm sometimes restores already inside the folder. That `if` / `[ -d ... ] &&` does the right thing either way.
 
 Later, same pattern in `agents\llamaindex`, then `agents\langgraph` (`agents\smolagents` is created via `uv init` when Phase 8 is written).
 
@@ -74,13 +89,11 @@ uv add <package>    # updates pyproject.toml + uv.lock + .venv together
 
 Experiment freely with `uv pip install whatever-you-are-testing` — the next `uv sync` removes anything the lock does not know. No wipe-to-refreeze, ever. Commit `uv.lock` changes together with your code/doc changes.
 
-Run without activating:
+Run (either way works; `activate` is optional for `uv run`):
 
 ```powershell
 uv run python path\to\file.py
 ```
-
-Or activate if you prefer: `agents\foundation\.venv\Scripts\activate`.
 
 Never bare `pip install`.
 
@@ -162,6 +175,7 @@ completion(model="ollama/qwen3", messages=..., api_base="http://localhost:11434"
 | Gemini 401 / API key | `.env` missing or `load_dotenv()` not called |
 | LlamaIndex asks for `OPENAI_API_KEY` | `Settings.llm` / `Settings.embed_model` not set |
 | `litellm[proxy]` pulled in | Wrong extra — uninstall; use bare `litellm` |
+| `Activate.ps1 cannot be loaded` | PowerShell execution policy. Run `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass`, then activate again — or just use `uv run python path\to\file.py` and skip activation. |
 
 ## Checkpoint
 

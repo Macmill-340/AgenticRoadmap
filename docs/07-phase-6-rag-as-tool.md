@@ -7,10 +7,27 @@ Fetch before writing:
 - https://docs.llamaindex.ai/en/stable/integrations/vector_stores/chromaindexdemo/  
 uv (same group as Phases 4–5):
 
+**Windows (PowerShell):**
+
 ```powershell
-cd agents\llamaindex
+if (Test-Path agents\llamaindex) { cd agents\llamaindex }
 uv sync
+.venv\Scripts\activate
+if (-not (Test-Path 06_rag_as_tool.py)) { New-Item -ItemType File 06_rag_as_tool.py }
 ```
+
+**macOS/Linux:**
+
+```bash
+[ -d agents/llamaindex ] && cd agents/llamaindex
+uv sync
+source .venv/bin/activate
+touch 06_rag_as_tool.py
+```
+
+Open `06_rag_as_tool.py` in your IDE — you will write the segments below there. The last line creates the file only if it does not already exist, so the same block is safe to re-run.
+
+New terminals (VS Code, Cursor) usually open at the repo root; PyCharm sometimes restores already inside the folder. That `if` / `[ -d ... ] &&` does the right thing either way.
 
 No new packages. Same `pyproject.toml`.
 

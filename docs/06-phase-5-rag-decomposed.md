@@ -9,10 +9,27 @@ Fetch before writing:
 - https://docs.llamaindex.ai/en/stable/module_guides/loading/node_parsers/ (pointer: what `SentenceSplitter` does for you)  
 uv (same group as Phase 4):
 
+**Windows (PowerShell):**
+
 ```powershell
-cd agents\llamaindex
+if (Test-Path agents\llamaindex) { cd agents\llamaindex }
 uv sync
+.venv\Scripts\activate
+if (-not (Test-Path 05_rag_decomposed.py)) { New-Item -ItemType File 05_rag_decomposed.py }
 ```
+
+**macOS/Linux:**
+
+```bash
+[ -d agents/llamaindex ] && cd agents/llamaindex
+uv sync
+source .venv/bin/activate
+touch 05_rag_decomposed.py
+```
+
+Open `05_rag_decomposed.py` in your IDE — you will write the segments below there. The last line creates the file only if it does not already exist, so the same block is safe to re-run.
+
+New terminals (VS Code, Cursor) usually open at the repo root; PyCharm sometimes restores already inside the folder. That `if` / `[ -d ... ] &&` does the right thing either way.
 
 No new packages. `sentence-transformers` and `chromadb` are already there.
 

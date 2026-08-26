@@ -12,7 +12,6 @@
 Thumbs.db
 
 # Local-only files (not teaching packets)
-session-ses_*.md
 agentic-frameworks-teaching-roadmap.md
 
 # Local model / RAG / checkpoint artifacts

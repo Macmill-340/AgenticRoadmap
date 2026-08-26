@@ -8,10 +8,27 @@ Fetch before writing:
 - https://docs.langchain.com/oss/python/langgraph/graph-api (read the Reducers + `MessagesState` part only — foreshadow, do not import)  
 uv (from `agents/foundation`):
 
+**Windows (PowerShell):**
+
 ```powershell
-cd agents\foundation
+if (Test-Path agents\foundation) { cd agents\foundation }
 uv sync
+.venv\Scripts\activate
+if (-not (Test-Path 03_state.py)) { New-Item -ItemType File 03_state.py }
 ```
+
+**macOS/Linux:**
+
+```bash
+[ -d agents/foundation ] && cd agents/foundation
+uv sync
+source .venv/bin/activate
+touch 03_state.py
+```
+
+Open `03_state.py` in your IDE — you will write the segments below there. The last line creates the file only if it does not already exist, so the same block is safe to re-run.
+
+New terminals (VS Code, Cursor) usually open at the repo root; PyCharm sometimes restores already inside the folder. That `if` / `[ -d ... ] &&` does the right thing either way.
 
 No new packages. Same `pyproject.toml` as Phase 2.
 

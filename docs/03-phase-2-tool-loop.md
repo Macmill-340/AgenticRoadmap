@@ -11,10 +11,27 @@ Fetch before writing:
 - https://huggingface.co/learn/agents-course/unit1/dummy-agent-library  
 uv (from `agents/foundation`):
 
+**Windows (PowerShell):**
+
 ```powershell
-cd agents\foundation
+if (Test-Path agents\foundation) { cd agents\foundation }
 uv sync
+.venv\Scripts\activate
+if (-not (Test-Path 02_tool_loop.py)) { New-Item -ItemType File 02_tool_loop.py }
 ```
+
+**macOS/Linux:**
+
+```bash
+[ -d agents/foundation ] && cd agents/foundation
+uv sync
+source .venv/bin/activate
+touch 02_tool_loop.py
+```
+
+Open `02_tool_loop.py` in your IDE — you will write the segments below there. The last line creates the file only if it does not already exist, so the same block is safe to re-run.
+
+New terminals (VS Code, Cursor) usually open at the repo root; PyCharm sometimes restores already inside the folder. That `if` / `[ -d ... ] &&` does the right thing either way.
 
 Suggested file: `agents/foundation/02_tool_loop.py`  
 Mode: **raw-first**. This is the phase every later framework explanation rests on. Keep the loop small enough to hold in your head. No streaming, no retries, no multi-agent.

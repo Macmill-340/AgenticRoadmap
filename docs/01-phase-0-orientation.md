@@ -8,10 +8,27 @@ Fetch before writing:
 - https://docs.litellm.ai/docs/providers/gemini  
 uv (from `agents/foundation`):
 
+**Windows (PowerShell):**
+
 ```powershell
-cd agents\foundation
+if (Test-Path agents\foundation) { cd agents\foundation }
 uv sync
+.venv\Scripts\activate
+if (-not (Test-Path 00_orientation.py)) { New-Item -ItemType File 00_orientation.py }
 ```
+
+**macOS/Linux:**
+
+```bash
+[ -d agents/foundation ] && cd agents/foundation
+uv sync
+source .venv/bin/activate
+touch 00_orientation.py
+```
+
+Open `00_orientation.py` in your IDE — you will write the segments below there. The last line creates the file only if it does not already exist, so the same block is safe to re-run.
+
+New terminals (VS Code, Cursor) usually open at the repo root; PyCharm sometimes restores already inside the folder. That `if` / `[ -d ... ] &&` does the right thing either way.
 
 Suggested file: `agents/foundation/00_orientation.py`  
 Mode: **abstraction**, ~20 lines, not graded.

@@ -40,7 +40,7 @@ Later phases (LangGraph, multi-agent, conventions) append their line here as eac
 ## How to follow
 
 1. Do [`docs/00-setup.md`](docs/00-setup.md) end to end (~10 min): install uv, set a free Gemini key in `.env`.
-2. Open the next guide, create its file in the right folder, and work **one segment at a time**: implement → run → match the expected output → next segment.
+2. Open the next guide, run its `uv` block (creates the file only if missing — safe to re-run), and work **one segment at a time**: implement → run → match the expected output → next segment.
 3. Every guide ends with checkpoint questions (answers included) — if you cannot answer them, rerun the segment.
 4. Milestone guides (2, 3, 6, 7/7b) end with an optional **Try this**: one small build of your own using what you just wrote. Skip it or invent something else — both are fine.
 
@@ -68,7 +68,7 @@ One uv project per layer so dependency trees never fight:
 | `agents/langgraph/` | 7, 7b, 9 |
 | `agents/smolagents/` | created only if Phase 8 is written |
 
-Each folder is its own uv project: `pyproject.toml` lists direct deps, the committed `uv.lock` pins every resolved version. Enter a folder and run `uv sync` when you reach its phase group; extend it later with `uv add`. Experiments installed ad hoc are cleaned by the next `uv sync`.
+Each folder is its own uv project: `pyproject.toml` lists direct deps, the committed `uv.lock` pins every resolved version. Run the guide's `uv` block — `if (Test-Path agents/<group>) { cd agents/<group> }` + `uv sync` + `activate` + `if (-not (Test-Path <phase_file>.py)) { New-Item ... }` (Windows) or `[ -d agents/<group> ] && cd ...` + `source .venv/bin/activate` + `touch` (macOS/Linux) — the last line is idempotent, safe to re-run. Extend later with `uv add`. Experiments installed ad hoc are cleaned by the next `uv sync`.
 
 ## Repo layout
 

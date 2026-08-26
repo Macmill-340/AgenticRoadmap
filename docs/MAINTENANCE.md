@@ -8,7 +8,7 @@ A new session writing any later phase **must re-fetch official docs**. Do not tr
 
 1. Fetch the URLs for the batch you are writing. If a URL 404s, open that site's `llms.txt` / section index and find the replacement. Do not invent URLs.
 2. Confirm imports against the **installed pin**, not the docs date. Especially LangGraph.
-3. Each `agents/*` folder is a uv project: direct deps in `pyproject.toml`, exact pins in the committed `uv.lock`. Set up with `uv sync`, extend with `uv add`. The root `pyproject.toml` exists only so PyCharm shows the repo root (no dependencies) — never `uv add` / `uv sync` there.
+3. Each `agents/*` folder is a uv project: direct deps in `pyproject.toml`, exact pins in the committed `uv.lock`. Set up with one idempotent block: `if (Test-Path agents/<group>) { cd agents/<group> }` + `uv sync` + `activate` + `if (-not (Test-Path <phase_file>.py)) { New-Item -ItemType File <phase_file>.py }` (Windows) / `[ -d agents/<group> ] && cd agents/<group>` + `source .venv/bin/activate` + `touch <phase_file>.py` (macOS/Linux). The last line creates only if missing — safe to re-run. The root `pyproject.toml` exists only so PyCharm shows the repo root (no dependencies) — never `uv add` / `uv sync` there.
 4. Check LangGraph + `llama-index-core` + `litellm` changelogs since the last `Last grounded` date.
 5. Defaults: LiteLLM → Gemini for chat; HuggingFace `all-MiniLM-L6-v2` for embeddings. Ollama optional.
 6. Pedagogy lock: see `AGENTS.md`.
@@ -17,6 +17,7 @@ A new session writing any later phase **must re-fetch official docs**. Do not tr
 9. Do not install `litellm[proxy]`.
 10. After the batch: set `Last grounded: YYYY-MM-DD` on every file you wrote, and update `docs/STATUS.md`.
 11. Style pass before done: every guide follows the writing style in `AGENTS.md` — content-bearing headers, no banned words, expected output after every code block.
+12. Never write or commit session dumps / chat exports (`session-ses_*.md`, transcripts). Delete them if they appear — do not add them to `.gitignore` to hide them.
 
 ## Always fetch (every batch)
 
