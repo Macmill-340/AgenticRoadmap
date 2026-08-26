@@ -24,6 +24,25 @@ A new coding session: read `AGENTS.md` → `docs/STATUS.md` → `docs/MAINTENANC
 
 ---
 
+## Editor (mermaid)
+
+Each phase guide has one mermaid diagram. Pick an editor that can preview it — or skip this and read the diagram on GitHub / [mermaid.live](https://mermaid.live).
+
+| Editor | Mermaid |
+|---|---|
+| PyCharm / IntelliJ | plugin [Mermaid](https://plugins.jetbrains.com/plugin/20146-mermaid) |
+| VS Code / Cursor | plugin [Markdown Preview Mermaid Support](https://marketplace.visualstudio.com/items?itemName=bierner.markdown-mermaid) |
+| Neither | open the guide on GitHub, or paste the fence into [mermaid.live](https://mermaid.live) |
+
+No editor is required. The course is a terminal plus whatever you already use.
+
+## What you need
+
+- **Python 3.13+** — `uv sync` downloads it if missing. You do not install Python by hand.
+- **Git** — you already have this repo.
+- **A Google account** — free Gemini key in the next section.
+- **Disk later** — Phase 4 downloads MiniLM plus a large CPU torch stack (hundreds of MB, one time).
+
 ## 1. Install uv (Windows)
 
 Official: https://docs.astral.sh/uv/getting-started/installation/
@@ -42,15 +61,18 @@ uv --version
 
 ## 2. Gemini API key
 
-1. https://aistudio.google.com → Get API key.
-2. Put it in `.env` at the repo root (gitignored).
+1. https://aistudio.google.com → Get API key (Bottom Left Key Icon) → Create API Key (Top Right Button).
+2. From the **repo root**, copy the example (PowerShell and macOS/Linux):
 
 ```
-GEMINI_API_KEY=your-key-here
-GEMINI_MODEL=gemini/gemini-2.5-flash
+cp .env.example .env
 ```
 
-LiteLLM reads `GEMINI_API_KEY`. Model string is `gemini/<name>`. Swap later: `openai/gpt-4o-mini` or `ollama/qwen3`.
+3. Open `.env` and set `GEMINI_API_KEY` to your key. Leave `GEMINI_MODEL` as is.
+
+One `.env` at the repo root only (gitignored). `load_dotenv()` walks up from `agents/*`. Never commit `.env`.
+
+Pass `api_key=os.getenv("GEMINI_API_KEY")` into every `completion` / `LiteLLM` call. Model string is `gemini/<name>`. Swap later: `openai/gpt-4o-mini` or `ollama/qwen3`.
 
 Do **not** install `litellm[proxy]`. That is a gateway server. This path uses the Python SDK only.
 
@@ -137,7 +159,8 @@ from litellm import completion
 load_dotenv()
 
 resp = completion(
-    model=os.environ.get("GEMINI_MODEL", "gemini/gemini-2.5-flash"),
+    model=os.getenv("GEMINI_MODEL", "gemini/gemini-2.5-flash"),
+    api_key=os.getenv("GEMINI_API_KEY"),
     messages=[{"role": "user", "content": "Say hi in five words."}],
 )
 print(resp.choices[0].message.content)
@@ -152,7 +175,8 @@ AgenticRoadmap/
   README.md
   AGENTS.md
   docs/
-  .env
+  .env.example         # copy to .env; never commit .env
+  .env                 # your key (gitignored)
   data/                # sample docs for the RAG phases already included
   agents/foundation/   # uv project (pyproject + lock + venv), phases 0–3
   agents/llamaindex/   # skeleton, phases 4–6 (venv when you get there)
@@ -164,7 +188,11 @@ AgenticRoadmap/
 Not required. To try later, pull a model and set `GEMINI_MODEL` aside:
 
 ```python
-completion(model="ollama/qwen3", messages=..., api_base="http://localhost:11434")
+completion(
+    model="ollama/qwen3",
+    messages=...,
+    api_base="http://localhost:11434",
+)
 ```
 
 ## Common failures
@@ -172,7 +200,7 @@ completion(model="ollama/qwen3", messages=..., api_base="http://localhost:11434"
 | Symptom | Cause |
 |---|---|
 | `uv` not found | Old terminal; reopen |
-| Gemini 401 / API key | `.env` missing or `load_dotenv()` not called |
+| Gemini 401 / API key | `.env` missing (`cp .env.example .env` from the repo root), empty key, or `load_dotenv()` not called |
 | LlamaIndex asks for `OPENAI_API_KEY` | `Settings.llm` / `Settings.embed_model` not set |
 | `litellm[proxy]` pulled in | Wrong extra — uninstall; use bare `litellm` |
 | `Activate.ps1 cannot be loaded` | PowerShell execution policy. Run `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass`, then activate again — or just use `uv run python path\to\file.py` and skip activation. |

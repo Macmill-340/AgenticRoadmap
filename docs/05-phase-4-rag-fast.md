@@ -121,9 +121,13 @@ from llama_index.vector_stores.chroma import ChromaVectorStore
 
 load_dotenv()
 
-MODEL = os.environ.get("GEMINI_MODEL", "gemini/gemini-2.5-flash")
+MODEL = os.getenv("GEMINI_MODEL", "gemini/gemini-2.5-flash")
+API_KEY = os.getenv("GEMINI_API_KEY")
 
-Settings.llm = LiteLLM(model=MODEL)
+Settings.llm = LiteLLM(
+    model=MODEL,
+    api_key=API_KEY,
+)
 Settings.embed_model = HuggingFaceEmbedding(
     model_name="sentence-transformers/all-MiniLM-L6-v2",
     device="cpu",

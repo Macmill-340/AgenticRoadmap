@@ -106,7 +106,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-MODEL = os.environ.get("GEMINI_MODEL", "gemini/gemini-2.5-flash")
+MODEL = os.getenv("GEMINI_MODEL", "gemini/gemini-2.5-flash")
+API_KEY = os.getenv("GEMINI_API_KEY")
 DATA_DIR = Path(__file__).resolve().parents[2] / "data"
 
 texts = {}
@@ -189,6 +190,7 @@ for doc, dist in zip(res["documents"][0], res["distances"][0]):
 context = "\n\n---\n\n".join(res["documents"][0])
 resp = completion(
     model=MODEL,
+    api_key=API_KEY,
     messages=[
         {"role": "system", "content": "Answer only from the notes. If they do not contain the answer, say so."},
         {"role": "user", "content": f"Notes:\n{context}\n\nQuestion: {QUERY}"},

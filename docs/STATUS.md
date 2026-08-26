@@ -14,7 +14,7 @@ Before writing any batch: re-fetch that batch's URLs from `docs/MAINTENANCE.md`.
 | `agents/langgraph/` | 7, 7b, 9 | `07_graph.py`, `07b_multi_agent.py`, `09_conventions.py` |
 | `agents/smolagents/` | 8 optional | folder created only when Phase 8 is written |
 
-Skeleton folders exist as uv projects: `pyproject.toml` + committed `uv.lock` per folder. Learner writes the `.py` files from the phase docs. Enter a folder and run `uv sync` when you reach that group.
+Skeleton folders exist as uv projects: `pyproject.toml` + committed `uv.lock` per folder (`course-foundation`, `course-llamaindex`, `course-langgraph`). Learner writes the `.py` files from the phase docs. Enter a folder and run the guide's `uv` block (`uv sync` installs the committed pins).
 
 ## Done (Batch 1 — docs only)
 
@@ -38,7 +38,7 @@ No learner Python files yet. That is intentional.
 - [x] **`docs/05-phase-4-rag-fast.md`** — abstraction. Set `Settings.llm` + `Settings.embed_model` **first**, every script. `SimpleDirectoryReader` → `VectorStoreIndex` → persistent Chroma (`PersistentClient`) → `as_query_engine()`. Chat via LiteLLM Gemini; embeddings via `HuggingFaceEmbedding("all-MiniLM-L6-v2")`. One deepening: rerank (industry default after naive top-k). Not BM25 / graph RAG / LlamaParse / Ollama nomic. File: `agents/llamaindex/04_rag_fast.py`
 - [x] **`docs/06-phase-5-rag-decomposed.md`** — decompose, no LlamaIndex. Hand-roll load → fixed-size chunk → overlap demo (query fails, then succeeds) → MiniLM embed (`sentence_transformers` directly) → raw Chroma client with own embeddings → cosine/top-k → stuff prompt → generate. One deepening: overlap failure + honest async timing (sequential vs batch vs `gather`+threads; batch wins on CPU). Extra: retrieved junk produces a fluent wrong answer (groundedness). New data: `overlap-demo.txt`. File: `agents/llamaindex/05_rag_decomposed.py`
 - [x] **`docs/07-phase-6-rag-as-tool.md`** — glue. Phase 4 query engine wrapped as `search_notes(query)` + hand-written schema inside a copy of the Phase 2 loop beside `add`; model chooses retrieve / arithmetic / direct answer. Try this: three of your own files, known + unknown questions. File: `agents/llamaindex/06_rag_as_tool.py`
-- [x] **`agents/llamaindex/pyproject.toml`** — `litellm`, `python-dotenv`, `llama-index-core`, `llama-index-llms-litellm`, `llama-index-embeddings-huggingface`, `llama-index-vector-stores-chroma`, `chromadb`, `sentence-transformers`. Reranker (`SentenceTransformerRerank`) ships in core — no extra package. Exact pins live in the committed `uv.lock` (generated on first `uv sync`).
+- [x] **`agents/llamaindex/pyproject.toml`** — `course-llamaindex`. `litellm`, `python-dotenv`, `llama-index-core`, `llama-index-llms-litellm`, `llama-index-embeddings-huggingface`, `llama-index-vector-stores-chroma`, `chromadb`, `sentence-transformers`. Reranker (`SentenceTransformerRerank`) ships in core — no extra package. Exact pins live in the committed `uv.lock`.
 - [x] **`data/` sample docs** — `agent-loop.txt` (real answer source), `rag.txt` (real), `decoy-tools.txt` (keyword bait that rerank should demote), `overlap-demo.txt` (Nightjar memo for the chunk-overlap failure). Sized under MiniLM's ~256-token truncation.
 
 ## Next (Batch 3 — Phases 7 + 7b)
@@ -47,7 +47,7 @@ Fetch the Batch 3 URL list from `docs/MAINTENANCE.md` before writing. Then:
 
 - [ ] **`docs/08-phase-7-langgraph.md`** — abstraction → short decompose. Segments: `StateGraph` + `MessagesState` + reducers (`add_messages` vs overwrite); agent node + `ToolNode` + `tools_condition`; just-in-time decorator box (what `@` does, 5-line example) right before `@tool`; LlamaIndex retriever wrapped as `@tool` (the hybrid production pattern); `SqliteSaver` + `thread_id` — kill process, resume, contrast `InMemorySaver`; `interrupt()` + `Command(resume=...)` — never `input()`, node restarts from top on resume, side effects must be idempotent, no bare `try/except` around `interrupt`; short hand-rolled dispatcher mapping back to Phases 2–3. Streaming = sidebar only. Never `create_react_agent` (deprecated). One mermaid: START → agent → tools? → ToolNode → agent → END. Skeleton + Spine line in same pass. File: `agents/langgraph/07_graph.py`
 - [ ] **`docs/09-phase-7b-multi-agent.md`** — abstraction. Supervisor first: two specialists (`research` = RAG tool from 6/7, `writer` = no tools, markdown out) invoked as `@tool`s by a supervisor; one task needing both. One deepening: handoff as contrast (`Command.goto`; LlamaIndex `AgentWorkflow(can_handoff_to=...)` is a pointer, not a build). Not router / Skills / A2A / Deep Agents. Milestone guide: draft its `## Try this` in the plan before writing. One mermaid: user → supervisor → specialists → supervisor → user. File: `agents/langgraph/07b_multi_agent.py`
-- [ ] **`agents/langgraph/pyproject.toml`** — exists (`litellm`, `python-dotenv`, `langgraph`, `langchain`). Extend via `uv add` at write time: Sqlite checkpointer extra + LlamaIndex wrap deps confirmed against installed pins; commit the updated lock.
+- [ ] **`agents/langgraph/pyproject.toml`** — exists as `course-langgraph` (`litellm`, `python-dotenv`, `langgraph`, `langchain`) with a committed `uv.lock`. Extend via `uv add` at write time: Sqlite checkpointer extra + LlamaIndex wrap deps confirmed against installed pins; commit the updated lock.
 
 Then update this file and stop.
 
@@ -60,7 +60,7 @@ Fetch the Batch 4 URL list first.
 - [ ] **`docs/10-phase-8-smolagents.md`** — optional, half day. `CodeAgent` vs `ToolCallingAgent` on the same task; code-as-action is a different bet, not a framework to master. Sandbox note only. File: `agents/smolagents/08_code_vs_tools.py`
 - [ ] **`docs/11-phase-9-modern-conventions.md`** — delta + **translation map** (approved expansion; no second implementation anywhere). Part A: Responses API loop beside the Chat Completions loop they built; structured output vs tools; stale-import map ("if you see `create_react_agent` / one-tool `AgentWorkflow` / Chat-Completions-only tutorials, here's what replaced them"). Part B — each row gets what-it-is, when-you'd-switch, ≤5-line snippet: Phase 2 loop → LangGraph `create_agent` harness (LlamaIndex `FunctionAgent` = pointer back to Phase 0); Phase 3 dict → LlamaIndex ChatEngine/memory as *pointer* + LangGraph `MessagesState`/Store; Phases 4–6 engine-as-tool → already the hybrid pattern; `max_steps` → `recursion_limit`; LlamaIndex Workflows / subgraphs → pointers only. File: `agents/langgraph/09_conventions.py`
 - [ ] **`docs/appendix-advanced-topics.md`** — short pointers + official URLs, nothing more: MCP, LangSmith, evals/guardrails, A2A, Deep Agents, LlamaIndex Workflows. Never grows into new phases without an explicit request.
-- [ ] **`agents/smolagents/pyproject.toml`** — only if Phase 8 is written (folder via `uv init`, deferred until then).
+- [ ] **`agents/smolagents/pyproject.toml`** — only if Phase 8 is written (folder via `uv init`, `[project] name` = `course-smolagents`, deferred until then).
 
 ### Optional fluency tours — write only when explicitly asked
 
@@ -73,7 +73,7 @@ Same rule as smolagents (Phase 8): no folder, no doc, no code until requested. P
 
 - Chat Completions via `litellm.completion` for Phases 2–7. Responses API is Phase 9.
 - Phase 0 uses `FunctionAgent` + `LiteLLM`, not `AgentWorkflow`, not Ollama.
-- uv projects per folder: direct deps in each `agents/*` `pyproject.toml`, exact pins in the committed `uv.lock`. `uv sync` heals a venv; `uv add` extends manifest + lock + venv together. The root `pyproject.toml` exists only so PyCharm shows the repo root (no dependencies) — never `uv add` / `uv sync` at the repo root.
+- uv projects per folder: `[project] name` is `course-<folder>` (never the PyPI package name). Direct deps in each `agents/*` `pyproject.toml`, exact pins in the committed `uv.lock`. `uv sync` heals a venv to those pins; `uv add` extends manifest + lock + venv together. The root `pyproject.toml` exists only so PyCharm shows the repo root (no dependencies) — never `uv add` / `uv sync` at the repo root.
 - Every phase doc gets exactly one mermaid (mental map, not decoration), per the locked template.
 - Every phase guide gets `## Skeleton` after Why: one recitable sentence + 4–6 ingredient steps. Append that phase's line to README's `## Spine` in the same pass.
 - `## Try this` rule (see AGENTS.md): optional milestone prompts only — Phases 2, 3, 6, 7/7b. One situation + "Done when …" + "skip or invent your own". Draft the prompt during planning; place the section after Checkpoint when writing. Locked prompts: P2 = keep `add`, add one invented tool, one user line needing both; P3 = preference told on turn 1 must survive capping by turn 4; P6 = agent answers from your own three files in `data/` or chats, retrieval never hard-coded; P7/7b = one real approval via `interrupt()` before a write tool, or two specialists on a task you actually care about.

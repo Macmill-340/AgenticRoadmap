@@ -39,7 +39,7 @@ Later phases (LangGraph, multi-agent, conventions) append their line here as eac
 
 ## How to follow
 
-1. Do [`docs/00-setup.md`](docs/00-setup.md) end to end (~10 min): install uv, set a free Gemini key in `.env`.
+1. Do [`docs/00-setup.md`](docs/00-setup.md) end to end (~10 min): pick an editor that can preview mermaid (or use GitHub / mermaid.live), install uv, `cp .env.example .env`, set a free Gemini key.
 2. Open the next guide, run its `uv` block (creates the file only if missing — safe to re-run), and work **one segment at a time**: implement → run → match the expected output → next segment.
 3. Every guide ends with checkpoint questions (answers included) — if you cannot answer them, rerun the segment.
 4. Milestone guides (2, 3, 6, 7/7b) end with an optional **Try this**: one small build of your own using what you just wrote. Skip it or invent something else — both are fine.

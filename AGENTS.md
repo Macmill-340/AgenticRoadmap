@@ -73,7 +73,8 @@ Optional creativity prompts at the end of milestone guides — **not** exercises
 ## Tool-calling API
 
 - **Phases 2–7:** OpenAI **Chat Completions** shape via `litellm.completion` (`tool_calls`, `role: "tool"`).
-- **Default model:** `gemini/gemini-2.5-flash` + `GEMINI_API_KEY`. Swap later by changing the model string (`openai/gpt-4o-mini`, `ollama/qwen3`).
+- **Default model:** `gemini/gemini-2.5-flash` + `GEMINI_API_KEY`. Pass `api_key=os.getenv("GEMINI_API_KEY")` into every `LiteLLM` / `completion` call. Swap later by changing the model string (`openai/gpt-4o-mini`, `ollama/qwen3`).
+- **`FunctionAgent.run`:** `await agent.run(user_msg="...")` — never positional. An IDE underline on that form is a stale type-overload; official docs use `user_msg=`; it runs.
 - **Phase 9:** OpenAI **Responses API** as a delta, not a rewrite.
 
 ## Models (ease, not local-first)
@@ -117,16 +118,18 @@ uv run python path\to\file.py  # works with or without activate; open the .py in
 uv add <package>       # mid-course: updates pyproject + lock + venv together
 ```
 
-Never bare `pip install`. The root `pyproject.toml` exists only so PyCharm shows the repo root — no dependencies, no `[tool.uv.workspace]`; never `uv add` / `uv sync` at the repo root. Real projects live in `agents/*`. Commit `uv.lock` changes alongside doc changes.
+Never bare `pip install`. The root `pyproject.toml` exists only so PyCharm shows the repo root — no dependencies, no `[tool.uv.workspace]`; never `uv add` / `uv sync` at the repo root. Real projects live in `agents/*`. Commit `uv.lock` changes alongside doc changes. Never `New-Item -Force` — that overwrites a learner file.
 
 Isolated projects (skeletons exist; learner writes the `.py` files):
 
-| Folder | Phases | Learner files |
-|---|---|---|
-| `agents/foundation/` | 0–3 | `00_orientation.py`, `02_tool_loop.py`, `03_state.py` |
-| `agents/llamaindex/` | 4–6 | `04_rag_fast.py`, `05_rag_decomposed.py`, `06_rag_as_tool.py` |
-| `agents/langgraph/` | 7, 7b, 9 | `07_graph.py`, `07b_multi_agent.py`, `09_conventions.py` |
-| `agents/smolagents/` | 8 optional | folder created only when Phase 8 is written |
+| Folder | `[project] name` | Phases | Learner files |
+|---|---|---|---|
+| `agents/foundation/` | `course-foundation` | 0–3 | `00_orientation.py`, `02_tool_loop.py`, `03_state.py` |
+| `agents/llamaindex/` | `course-llamaindex` | 4–6 | `04_rag_fast.py`, `05_rag_decomposed.py`, `06_rag_as_tool.py` |
+| `agents/langgraph/` | `course-langgraph` | 7, 7b, 9 | `07_graph.py`, `07b_multi_agent.py`, `09_conventions.py` |
+| `agents/smolagents/` | `course-smolagents` | 8 optional | folder created only when Phase 8 is written |
+
+`[project] name` is always `course-<folder>`. Never name the project the same as a PyPI dependency (`langgraph`, `smolagents`, …) — uv then treats the folder as that package and skips the install. Folder names stay `foundation` / `llamaindex` / `langgraph`.
 
 Each folder: `uv sync` when you reach its group, then `uv run python path\to\file.py` (activate first if you want the IDE to see the venv: `.venv\Scripts\activate` on Windows, `source .venv/bin/activate` on macOS/Linux).
 
@@ -136,6 +139,7 @@ Each folder: `uv sync` when you reach its group, then `uv run python path\to\fil
 docs/            teaching guides + MAINTENANCE + STATUS
 agents/          uv project skeletons; learner writes the .py files
 data/            small local docs for RAG
+.env.example     copy to .env at the repo root (`cp .env.example .env`); never commit .env
 README.md        GitHub overview; learner entry point (links to 00-setup.md)
 AGENTS.md        starting point for AI sessions extending the course
 ```
@@ -147,9 +151,10 @@ AGENTS.md        starting point for AI sessions extending the course
 - Use `AgentWorkflow` for the Phase 0 one-tool demo. Use `FunctionAgent`.
 - Default LlamaIndex `Settings` to OpenAI. Set `Settings.llm` and `Settings.embed_model` every time.
 - Wrap `interrupt()` in bare `try/except`. HITL is `interrupt()` + `Command(resume=...)`, not `input()`.
-- Commit secrets. Use `.env`.
+- Commit secrets. Use `.env` (from `.env.example` via `cp .env.example .env`). Never commit `.env`.
 - Do not write the learner's `.py` files — every guide tells the learner which file to create. STATUS tracks docs; learners track code.
 - Never write or commit session dumps / chat exports (`session-ses_*.md`, transcripts). Delete them if they appear — do not add them to `.gitignore` to hide them.
+- Never `New-Item -Force` on a learner file. Never set `[project] name` to a PyPI package the folder depends on — use `course-<folder>`.
 
 ## Batches
 

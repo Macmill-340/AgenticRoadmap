@@ -98,10 +98,12 @@ from litellm import completion
 
 load_dotenv()
 
-MODEL = os.environ.get("GEMINI_MODEL", "gemini/gemini-2.5-flash")
+MODEL = os.getenv("GEMINI_MODEL", "gemini/gemini-2.5-flash")
+API_KEY = os.getenv("GEMINI_API_KEY")
 
 resp = completion(
     model=MODEL,
+    api_key=API_KEY,
     messages=[{"role": "user", "content": "Say hi in five words."}],
 )
 print(resp.choices[0].message.content)
@@ -185,7 +187,12 @@ messages = [
     {"role": "system", "content": "Use tools for arithmetic. Do not compute yourself."},
     {"role": "user", "content": "What is 41 + 1?"},
 ]
-resp = completion(model=MODEL, messages=messages, tools=TOOLS)
+resp = completion(
+    model=MODEL,
+    api_key=API_KEY,
+    messages=messages,
+    tools=TOOLS,
+)
 msg = resp.choices[0].message
 print("finish_reason:", resp.choices[0].finish_reason)
 print("content:", msg.content)
@@ -228,7 +235,12 @@ for call in msg.tool_calls or []:
         }
     )
 
-resp2 = completion(model=MODEL, messages=messages, tools=TOOLS)
+resp2 = completion(
+    model=MODEL,
+    api_key=API_KEY,
+    messages=messages,
+    tools=TOOLS,
+)
 print(resp2.choices[0].message.content)
 ```
 
@@ -277,7 +289,12 @@ def run_agent(user_text: str) -> str:
         {"role": "user", "content": user_text},
     ]
     for step in range(MAX_STEPS):
-        resp = completion(model=MODEL, messages=messages, tools=TOOLS)
+        resp = completion(
+            model=MODEL,
+            api_key=API_KEY,
+            messages=messages,
+            tools=TOOLS,
+        )
         msg = resp.choices[0].message
         messages.append(msg)
         if not msg.tool_calls:

@@ -99,13 +99,16 @@ def multiply(a: float, b: float) -> float:
 
 agent = FunctionAgent(
     tools=[multiply],
-    llm=LiteLLM(model=os.environ.get("GEMINI_MODEL", "gemini/gemini-2.5-flash")),
+    llm=LiteLLM(
+        model=os.getenv("GEMINI_MODEL", "gemini/gemini-2.5-flash"),
+        api_key=os.getenv("GEMINI_API_KEY"),
+    ),
     system_prompt="You are an assistant that uses tools for arithmetic.",
 )
 
 
 async def main() -> None:
-    response = await agent.run("What is 1234 * 4567?")
+    response = await agent.run(user_msg="What is 1234 * 4567?")
     print(str(response))
 
 
@@ -131,7 +134,8 @@ uv run python 00_orientation.py
 | Symptom | Fix |
 |---|---|
 | `OPENAI_API_KEY` / auth error | You imported a default OpenAI LLM. This script must use `LiteLLM(...)`. |
-| Gemini 401 | `.env` missing or `load_dotenv()` not called. |
+| Gemini 401 | `.env` missing, `load_dotenv()` not called, or `api_key=` not passed. |
+| IDE underlines `run(user_msg=...)` | Ignore it. Official docs use this form; the pin marks a type-overload deprecated. It runs. |
 | Answers without calling the tool | Tighten the prompt: `"Use the multiply tool. What is 1234 * 4567?"` |
 | `asyncio` error in notebook vs script | Script needs `asyncio.run`. Notebooks can `await` at top level. |
 

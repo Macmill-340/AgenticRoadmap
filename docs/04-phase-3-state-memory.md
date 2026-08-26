@@ -91,17 +91,26 @@ from litellm import completion
 
 load_dotenv()
 
-MODEL = os.environ.get("GEMINI_MODEL", "gemini/gemini-2.5-flash")
+MODEL = os.getenv("GEMINI_MODEL", "gemini/gemini-2.5-flash")
+API_KEY = os.getenv("GEMINI_API_KEY")
 
 messages = [{"role": "system", "content": "You are a concise assistant."}]
 
 messages.append({"role": "user", "content": "My name is Ada."})
-resp = completion(model=MODEL, messages=messages)
+resp = completion(
+    model=MODEL,
+    api_key=API_KEY,
+    messages=messages,
+)
 print(resp.choices[0].message.content)
 messages.append(resp.choices[0].message)
 
 messages.append({"role": "user", "content": "What is my name?"})
-resp = completion(model=MODEL, messages=messages)
+resp = completion(
+    model=MODEL,
+    api_key=API_KEY,
+    messages=messages,
+)
 print(resp.choices[0].message.content)
 ```
 
@@ -188,7 +197,12 @@ MAX_STEPS = 8
 def run_agent(state: AgentState, user_text: str) -> str:
     state["messages"].append({"role": "user", "content": user_text})
     for _step in range(MAX_STEPS):
-        resp = completion(model=MODEL, messages=build_messages(state), tools=TOOLS)
+        resp = completion(
+            model=MODEL,
+            api_key=API_KEY,
+            messages=build_messages(state),
+            tools=TOOLS,
+        )
         msg = resp.choices[0].message
         state["messages"].append(msg)
         if not msg.tool_calls:
@@ -283,9 +297,12 @@ def enforce_summarize(state: AgentState, keep_last: int = 4) -> None:
     transcript = "\n".join(f"{who(m)}: {text_of(m)}" for m in old)
     summary = completion(
         model=MODEL,
+        api_key=API_KEY,
         messages=[
-            {"role": "user",
-             "content": f"Summarize in two sentences:\n{transcript}"},
+            {
+                "role": "user",
+                "content": f"Summarize in two sentences:\n{transcript}",
+            },
         ],
     ).choices[0].message.content
     prev = state["facts"].get("summary", "")

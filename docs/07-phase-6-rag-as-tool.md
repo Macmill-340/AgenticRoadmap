@@ -104,11 +104,16 @@ from llama_index.vector_stores.chroma import ChromaVectorStore
 
 load_dotenv()
 
-MODEL = os.environ.get("GEMINI_MODEL", "gemini/gemini-2.5-flash")
+MODEL = os.getenv("GEMINI_MODEL", "gemini/gemini-2.5-flash")
+API_KEY = os.getenv("GEMINI_API_KEY")
 
-Settings.llm = LiteLLM(model=MODEL)
+Settings.llm = LiteLLM(
+    model=MODEL,
+    api_key=API_KEY,
+)
 Settings.embed_model = HuggingFaceEmbedding(
-    model_name="sentence-transformers/all-MiniLM-L6-v2", device="cpu"
+    model_name="sentence-transformers/all-MiniLM-L6-v2",
+    device="cpu",
 )
 
 CHROMA_PATH = Path(__file__).resolve().parent / "chroma_db"
@@ -160,7 +165,12 @@ MAX_STEPS = 8
 def run_agent(state: dict, user_text: str) -> str:
     state["messages"].append({"role": "user", "content": user_text})
     for _step in range(MAX_STEPS):
-        resp = completion(model=MODEL, messages=state["messages"], tools=TOOLS)
+        resp = completion(
+            model=MODEL,
+            api_key=API_KEY,
+            messages=state["messages"],
+            tools=TOOLS,
+        )
         msg = resp.choices[0].message
         state["messages"].append(msg)
         if not msg.tool_calls:
