@@ -94,9 +94,10 @@ flowchart TD
 ```python
 import os
 from dotenv import load_dotenv
-from litellm import completion
 
 load_dotenv()
+
+from litellm import completion
 
 MODEL = os.getenv("GEMINI_MODEL", "gemini/gemini-3.5-flash-lite")
 API_KEY = os.getenv("GEMINI_API_KEY")

@@ -90,10 +90,11 @@ import asyncio
 import os
 
 from dotenv import load_dotenv
-from llama_index.core.agent.workflow import FunctionAgent
-from llama_index.llms.litellm import LiteLLM
 
 load_dotenv()
+
+from llama_index.core.agent.workflow import FunctionAgent
+from llama_index.llms.litellm import LiteLLM
 
 
 def multiply(a: float, b: float) -> float:
@@ -125,7 +126,7 @@ if __name__ == "__main__":
 uv run python 00_orientation.py
 ```
 
-**Expected:** first a line like `multiply(1234.0, 4567.0)` — that is *your process* running the tool — then a sentence containing `5635678` (or the product). If you only get the sentence, the model did the math itself; tighten the prompt.
+**Expected:** first a line like `multiply(1234.0, 4567.0)` — that is *your process* running the tool — then a sentence containing `5635678` (or the product). You should not see `LiteLLM:WARNING` lines (`LITELLM_LOG=ERROR` in `.env`, and `load_dotenv()` before importing LiteLLM). If you only get the sentence, the model did the math itself; tighten the prompt.
 
 **What just moved:**
 

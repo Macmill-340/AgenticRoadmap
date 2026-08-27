@@ -68,9 +68,9 @@ uv --version
 cp .env.example .env
 ```
 
-3. Open `.env` and set `GEMINI_API_KEY` to your key. Leave `GEMINI_MODEL` as is.
+3. Open `.env` and set `GEMINI_API_KEY` to your key. Leave `GEMINI_MODEL` and `LITELLM_LOG=ERROR` as is (`LITELLM_LOG` quiets LiteLLM's Gemini 3 sampling notice; real errors still raise).
 
-One `.env` at the repo root only (gitignored). `load_dotenv()` walks up from `agents/*`. Never commit `.env`.
+One `.env` at the repo root only (gitignored). `load_dotenv()` walks up from `agents/*`. Call it **before** importing LiteLLM — LiteLLM reads `LITELLM_LOG` at import time. Never commit `.env`.
 
 Pass `api_key=os.getenv("GEMINI_API_KEY")` into every `completion` / `LiteLLM` call. Model string is `gemini/<name>`. Swap later: `openai/gpt-4o-mini` or `ollama/qwen3`.
 
@@ -156,9 +156,10 @@ Nothing deeper is assumed.
 ```python
 import os
 from dotenv import load_dotenv
-from litellm import completion
 
 load_dotenv()
+
+from litellm import completion
 
 resp = completion(
     model=os.getenv("GEMINI_MODEL", "gemini/gemini-3.5-flash-lite"),

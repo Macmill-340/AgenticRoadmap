@@ -81,6 +81,7 @@ Optional creativity prompts at the end of milestone guides — **not** exercises
 
 - **Phases 2–7:** OpenAI **Chat Completions** shape via `litellm.completion` (`tool_calls`, `role: "tool"`).
 - **Default model:** `gemini/gemini-3.5-flash-lite` + `GEMINI_API_KEY`. Pass `api_key=os.getenv("GEMINI_API_KEY")` into every `LiteLLM` / `completion` call. Swap later by changing the model string (`openai/gpt-4o-mini`, `ollama/qwen3`).
+- **`.env`:** `LITELLM_LOG=ERROR` (quiets LiteLLM's Gemini 3 sampling notice). Call `load_dotenv()` **before** importing LiteLLM — it reads `LITELLM_LOG` at import time.
 - **`FunctionAgent.run`:** `await agent.run(user_msg="...")` — never positional. An IDE underline on that form is a stale type-overload; official docs use `user_msg=`; it runs.
 - **Phase 9:** OpenAI **Responses API** as a delta, not a rewrite.
 

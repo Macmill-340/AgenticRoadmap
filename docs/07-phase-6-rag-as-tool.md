@@ -97,12 +97,12 @@ import chromadb
 from dotenv import load_dotenv
 from pydantic import BaseModel, ValidationError
 
+load_dotenv()
+
 from llama_index.core import Settings, VectorStoreIndex
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.llms.litellm import LiteLLM
 from llama_index.vector_stores.chroma import ChromaVectorStore
-
-load_dotenv()
 
 MODEL = os.getenv("GEMINI_MODEL", "gemini/gemini-3.5-flash-lite")
 API_KEY = os.getenv("GEMINI_API_KEY")
