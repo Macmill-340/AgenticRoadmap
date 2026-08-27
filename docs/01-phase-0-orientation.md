@@ -99,7 +99,7 @@ from llama_index.llms.litellm import LiteLLM
 
 def multiply(a: float, b: float) -> float:
     """Multiply two numbers and return the product."""
-    print(f"multiply({a}, {b})")
+    print(f"your process ran multiply({a}, {b})")
     return a * b
 
 
@@ -126,7 +126,7 @@ if __name__ == "__main__":
 uv run python 00_orientation.py
 ```
 
-**Expected:** first a line like `multiply(1234.0, 4567.0)` — that is *your process* running the tool — then a sentence containing `5635678` (or the product). You should not see `LiteLLM:WARNING` lines (`LITELLM_LOG=ERROR` in `.env`, and `load_dotenv()` before importing LiteLLM). If you only get the sentence, the model did the math itself; tighten the prompt.
+**Expected:** first a line like `your process ran multiply(1234.0, 4567.0)` — then a sentence containing `5635678` (or the product). You should not see `LiteLLM:WARNING` lines (`LITELLM_LOG=ERROR` in `.env`, and `load_dotenv()` before importing LiteLLM). If you only get the sentence, the model did the math itself; tighten the prompt.
 
 **What just moved:**
 
@@ -164,4 +164,4 @@ Do not add chat history, RAG, or a second tool here.
 2. Who executed `multiply` — the model or your process?
 3. Who owns the loop here — you or `FunctionAgent`?
 
-Answers: (1) tool name, docstring, argument types; (2) your process — the `multiply(...)` print proves it; (3) `FunctionAgent`. Phase 2 is when you own the loop.
+Answers: (1) tool name, docstring, argument types; (2) your process — the `your process ran multiply(...)` print proves it; (3) `FunctionAgent`. Phase 2 is when you own the loop.
