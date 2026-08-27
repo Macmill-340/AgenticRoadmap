@@ -121,7 +121,7 @@ from llama_index.vector_stores.chroma import ChromaVectorStore
 
 load_dotenv()
 
-MODEL = os.getenv("GEMINI_MODEL", "gemini/gemini-2.5-flash")
+MODEL = os.getenv("GEMINI_MODEL", "gemini/gemini-3.5-flash-lite")
 API_KEY = os.getenv("GEMINI_API_KEY")
 
 Settings.llm = LiteLLM(

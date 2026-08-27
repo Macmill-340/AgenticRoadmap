@@ -106,7 +106,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-MODEL = os.getenv("GEMINI_MODEL", "gemini/gemini-2.5-flash")
+MODEL = os.getenv("GEMINI_MODEL", "gemini/gemini-3.5-flash-lite")
 API_KEY = os.getenv("GEMINI_API_KEY")
 DATA_DIR = Path(__file__).resolve().parents[2] / "data"
 

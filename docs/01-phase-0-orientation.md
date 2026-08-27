@@ -81,6 +81,18 @@ flowchart LR
 
 `.env` must contain `GEMINI_API_KEY`.
 
+### Async in 20 seconds
+
+`FunctionAgent.run` waits on the network, so it is `async`. Three words:
+
+```python
+async def main() -> None:            # this function can pause
+    response = await agent.run(...)  # pause here until Gemini answers
+asyncio.run(main())                  # start the event loop (scripts only)
+```
+
+That's all you need here. Phase 5 covers running several waits at once.
+
 ```python
 import asyncio
 import os
@@ -94,13 +106,14 @@ load_dotenv()
 
 def multiply(a: float, b: float) -> float:
     """Multiply two numbers and return the product."""
+    print(f"multiply({a}, {b})")
     return a * b
 
 
 agent = FunctionAgent(
     tools=[multiply],
     llm=LiteLLM(
-        model=os.getenv("GEMINI_MODEL", "gemini/gemini-2.5-flash"),
+        model=os.getenv("GEMINI_MODEL", "gemini/gemini-3.5-flash-lite"),
         api_key=os.getenv("GEMINI_API_KEY"),
     ),
     system_prompt="You are an assistant that uses tools for arithmetic.",
@@ -120,7 +133,7 @@ if __name__ == "__main__":
 uv run python 00_orientation.py
 ```
 
-**Expected:** a sentence containing `5635678` (or the product). The model should have used `multiply`, not mental math — the system prompt asks it to.
+**Expected:** first a line like `multiply(1234.0, 4567.0)` — that is *your process* running the tool — then a sentence containing `5635678` (or the product). If you only get the sentence, the model did the math itself; tighten the prompt.
 
 **What just moved:**
 
@@ -136,6 +149,7 @@ uv run python 00_orientation.py
 | `OPENAI_API_KEY` / auth error | You imported a default OpenAI LLM. This script must use `LiteLLM(...)`. |
 | Gemini 401 | `.env` missing, `load_dotenv()` not called, or `api_key=` not passed. |
 | IDE underlines `run(user_msg=...)` | Ignore it. Official docs use this form; the pin marks a type-overload deprecated. It runs. |
+| `str \| None` on `model=` | You dropped the default. Use `os.getenv("GEMINI_MODEL", "gemini/gemini-3.5-flash-lite")`. |
 | Answers without calling the tool | Tighten the prompt: `"Use the multiply tool. What is 1234 * 4567?"` |
 | `asyncio` error in notebook vs script | Script needs `asyncio.run`. Notebooks can `await` at top level. |
 

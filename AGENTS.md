@@ -20,6 +20,8 @@ Re-fetch that batch's official URLs before writing.
 Do not skip the fetch list.
 ```
 
+When this session locks a new convention, write it into `AGENTS.md` (and `docs/MAINTENANCE.md` if it is a write-time rule) **in the same pass**. A new session must not need prior chat.
+
 ## What this is
 
 A phase-by-phase teaching path. Each `docs/*.md` is a **self-contained guide** — what you'll build, why it matters, how to build it, `uv sync` / `uv add` lines, snippets, expected output, suggested filename. Someone should be able to implement from that file alone.
@@ -58,7 +60,10 @@ Write for one reader: a smart beginner building along in a terminal.
 - Short sentences. Second person ("you"). Concrete verbs over abstractions.
 - Banned words: packet, cold-start, parking lot, shim, load-bearing, leverage, robust, seamless, delve. "Guide" is the standing noun for a phase doc.
 - Every code block is followed by what you should see when you run it.
-- Python topics are taught just-in-time: a short box with example code, inside the guide that first needs the topic (async in Phase 5, decorators in Phase 7). setup.md carries the "Coming from pip?" and "Python you should be comfortable with" sections.
+- One mermaid per phase. No extra diagram after snippets. Explain after the code (`What just moved`), not with comments in the snippet.
+- First-tool demo: print inside the Python function so the learner can see the process ran.
+- `os.getenv("GEMINI_MODEL", "gemini/gemini-3.5-flash-lite")` — the default keeps the type `str`.
+- Python topics are taught just-in-time: a short box with example code, inside the guide that first needs the topic (async `run`/`await` in Phase 0; gather / concurrency in Phase 5; decorators in Phase 7). setup.md carries the "Coming from pip?" and "Python you should be comfortable with" sections.
 - Read the section aloud before marking it done. If it sounds like a changelog or a slide, rewrite it.
 
 ## Try this (milestones)
@@ -73,7 +78,7 @@ Optional creativity prompts at the end of milestone guides — **not** exercises
 ## Tool-calling API
 
 - **Phases 2–7:** OpenAI **Chat Completions** shape via `litellm.completion` (`tool_calls`, `role: "tool"`).
-- **Default model:** `gemini/gemini-2.5-flash` + `GEMINI_API_KEY`. Pass `api_key=os.getenv("GEMINI_API_KEY")` into every `LiteLLM` / `completion` call. Swap later by changing the model string (`openai/gpt-4o-mini`, `ollama/qwen3`).
+- **Default model:** `gemini/gemini-3.5-flash-lite` + `GEMINI_API_KEY`. Pass `api_key=os.getenv("GEMINI_API_KEY")` into every `LiteLLM` / `completion` call. Swap later by changing the model string (`openai/gpt-4o-mini`, `ollama/qwen3`).
 - **`FunctionAgent.run`:** `await agent.run(user_msg="...")` — never positional. An IDE underline on that form is a stale type-overload; official docs use `user_msg=`; it runs.
 - **Phase 9:** OpenAI **Responses API** as a delta, not a rewrite.
 

@@ -91,7 +91,7 @@ from litellm import completion
 
 load_dotenv()
 
-MODEL = os.getenv("GEMINI_MODEL", "gemini/gemini-2.5-flash")
+MODEL = os.getenv("GEMINI_MODEL", "gemini/gemini-3.5-flash-lite")
 API_KEY = os.getenv("GEMINI_API_KEY")
 
 messages = [{"role": "system", "content": "You are a concise assistant."}]
@@ -249,7 +249,7 @@ print(state["facts"])                        # {'user_name': 'Ada'}
 
 ## Segment 4 — Deepening: token budget, cap vs summarize
 
-Gemini 2.5 Flash's window is enormous — you will never overflow it in a demo. So the budget is **artificial on purpose**: `TOKEN_BUDGET = 400` tokens stands in for any hard constraint (a smaller local model, cost caps, latency). The mechanics are identical at real scale.
+Gemini's context window is enormous — you will never overflow it in a demo. So the budget is **artificial on purpose**: `TOKEN_BUDGET = 400` tokens stands in for any hard constraint (a smaller local model, cost caps, latency). The mechanics are identical at real scale.
 
 LiteLLM counts for you — no extra dependency:
 

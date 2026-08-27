@@ -144,7 +144,7 @@ The course assumes everyday Python: functions, dicts, lists, f-strings, `if __na
 | Type hints + `TypedDict` | Phase 3 | `state: dict[str, str]` — a dict with its key/value types spelled out |
 | `pydantic.BaseModel` | Phase 2 | a class whose fields validate data the moment you create it |
 | `pathlib.Path` | Phase 4 | file paths as objects; `Path(__file__).parent` is the folder this file lives in |
-| `async` / `await` | Phase 5 | taught properly in Phase 5's "Async in 60 seconds" |
+| `async` / `await` | Phase 0 | three words to run `FunctionAgent`; gather / concurrency is Phase 5 |
 | Decorators (`@name`) | Phase 7 | taught in Phase 7, right before `@tool` |
 
 Nothing deeper is assumed.
@@ -159,7 +159,7 @@ from litellm import completion
 load_dotenv()
 
 resp = completion(
-    model=os.getenv("GEMINI_MODEL", "gemini/gemini-2.5-flash"),
+    model=os.getenv("GEMINI_MODEL", "gemini/gemini-3.5-flash-lite"),
     api_key=os.getenv("GEMINI_API_KEY"),
     messages=[{"role": "user", "content": "Say hi in five words."}],
 )

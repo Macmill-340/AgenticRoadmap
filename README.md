@@ -49,7 +49,7 @@ Later phases (LangGraph, multi-agent, conventions) append their line here as eac
 | Role | Choice | Why |
 |---|---|---|
 | Install | [uv](https://docs.astral.sh/uv/) — `uv sync` inside each project folder | fast; exact versions pinned in each committed `uv.lock` |
-| Chat + tools | LiteLLM → Gemini (`gemini/gemini-2.5-flash`) | reliable tool-calling; hot-swap providers by editing one model string |
+| Chat + tools | LiteLLM → Gemini (`gemini/gemini-3.5-flash-lite`) | reliable tool-calling; hot-swap providers by editing one model string |
 | Embeddings (phases 4–6) | HuggingFace `all-MiniLM-L6-v2` (~90 MB, CPU) | no Ollama required |
 | Tool validation | `pydantic.BaseModel` | typed arguments; errors go back to the model as observations |
 | Retrieval | LlamaIndex core | load → chunk → embed → store → query |

@@ -49,7 +49,7 @@ Every later framework (LlamaIndex `FunctionAgent`, LangGraph `ToolNode`) is this
 **Provider:** Gemini via LiteLLM. Swap later by changing `MODEL` only.
 
 ```python
-MODEL = "gemini/gemini-2.5-flash"
+MODEL = "gemini/gemini-3.5-flash-lite"
 # MODEL = "openai/gpt-4o-mini"
 # MODEL = "ollama/qwen3"  # needs Ollama running
 ```
@@ -98,7 +98,7 @@ from litellm import completion
 
 load_dotenv()
 
-MODEL = os.getenv("GEMINI_MODEL", "gemini/gemini-2.5-flash")
+MODEL = os.getenv("GEMINI_MODEL", "gemini/gemini-3.5-flash-lite")
 API_KEY = os.getenv("GEMINI_API_KEY")
 
 resp = completion(

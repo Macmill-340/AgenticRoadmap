@@ -18,6 +18,7 @@ A new session writing any later phase **must re-fetch official docs**. Do not tr
 10. After the batch: set `Last grounded: YYYY-MM-DD` on every file you wrote, and update `docs/STATUS.md`.
 11. Style pass before done: every guide follows the writing style in `AGENTS.md` — content-bearing headers, no banned words, expected output after every code block.
 12. Never write or commit session dumps / chat exports (`session-ses_*.md`, transcripts). Delete them if they appear — do not add them to `.gitignore` to hide them.
+13. When this session locks a new convention, write it into `AGENTS.md` (and this file if it is a write-time rule) **in the same pass**. A new session must not need prior chat.
 
 ## Always fetch (every batch)
 
@@ -89,7 +90,7 @@ A new session writing any later phase **must re-fetch official docs**. Do not tr
 | LangGraph prebuilt ReAct | `from langchain.agents import create_agent` | `from langgraph.prebuilt import create_react_agent` |
 | In-memory checkpointer | `InMemorySaver` | older `MemorySaver` name in some posts |
 | OpenAI official loop | Responses API | This course uses Chat Completions via LiteLLM until Phase 9 |
-| Chat default | LiteLLM `gemini/gemini-2.5-flash` | Ollama as required |
+| Chat default | LiteLLM `gemini/gemini-3.5-flash-lite` | Ollama as required |
 | Embeddings | HuggingFace `all-MiniLM-L6-v2` | Ollama `nomic-embed-text` |
 | Install | `uv sync` / `uv add` per `agents/*` uv project | bare pip; freeze-into-requirements; root uv workspace / shared lock |
 | LiteLLM | Python SDK only (`litellm`) | `litellm[proxy]` |
