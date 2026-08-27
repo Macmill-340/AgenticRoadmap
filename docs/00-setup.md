@@ -103,6 +103,8 @@ New terminals (VS Code, Cursor) usually open at the repo root; PyCharm sometimes
 
 Later, same pattern in `agents\llamaindex`, then `agents\langgraph` (`agents\smolagents` is created via `uv init` when Phase 8 is written).
 
+`agents/foundation/pyproject.toml` lists **two** LiteLLM-related packages on purpose: `llama-index-llms-litellm` is the wrapper Phase 0 imports as `LiteLLM(...)`; `litellm` is the SDK you will `import` yourself in Phase 2. Same provider, two import paths.
+
 Adding a package mid-course:
 
 ```powershell
@@ -209,6 +211,6 @@ completion(
 
 1. Why a separate venv for LangGraph vs LlamaIndex?
 2. What do you change to swap Gemini for OpenAI?
-3. Why pin both `litellm` and `llama-index-llms-litellm`?
+3. Why does `foundation` pin both `litellm` and `llama-index-llms-litellm`?
 
-Answers: (1) conflicting pins; (2) the LiteLLM model string (and the other provider’s key); (3) Phase 2 imports `litellm` directly; the wrapper is only for `FunctionAgent`.
+Answers: (1) conflicting pins; (2) the LiteLLM model string (and the other provider’s key); (3) the wrapper is `LiteLLM(...)` in Phase 0; `import litellm` is the raw SDK you use from Phase 2.

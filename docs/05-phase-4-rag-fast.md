@@ -264,6 +264,6 @@ print(engine_reranked.query(QUERY))
 1. Why did the second run skip the embedding step?
 2. What do `Settings.llm` / `Settings.embed_model` prevent?
 3. Bi-encoder vs cross-encoder — what does each see?
-4. Where does this query engine plug into the thing you built in Phase 2?
+4. What does rerank change — the stored index, or the order of the nodes you already retrieved?
 
-Answers: (1) vectors were persisted in Chroma; `from_vector_store` reuses them. (2) silent OpenAI defaults. (3) bi-encoder embeds query and chunk separately (fast, approximate); cross-encoder reads the pair jointly (accurate, slower — hence rerank-only). (4) nowhere yet — Phase 6 wraps it as a function/tool schema inside `run_agent`.
+Answers: (1) vectors were persisted in Chroma; `from_vector_store` reuses them. (2) silent OpenAI defaults. (3) bi-encoder embeds query and chunk separately (fast, approximate); cross-encoder reads the pair jointly (accurate, slower — hence rerank-only). (4) only the order of retrieved nodes — the index is untouched.

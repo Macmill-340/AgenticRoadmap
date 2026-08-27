@@ -60,7 +60,9 @@ Write for one reader: a smart beginner building along in a terminal.
 - Short sentences. Second person ("you"). Concrete verbs over abstractions.
 - Banned words: packet, cold-start, parking lot, shim, load-bearing, leverage, robust, seamless, delve. "Guide" is the standing noun for a phase doc.
 - Every code block is followed by what you should see when you run it.
-- One mermaid per phase. No extra diagram after snippets. Explain after the code (`What just moved`), not with comments in the snippet.
+- One mermaid per phase. No extra diagram after snippets. Explain after the code (`What just moved`), not with comments in the snippet. If the mermaid is the flow of the snippet they just ran, put it after Expected / What just moved — not as a slide before they type.
+- Tool **docstrings** (and JSON `description` later) are required: the model reads name, types, and that text to decide *when* to call. Explain that in the guide before the tool snippet. Do not use `#` comments in the `.py` to teach.
+- Checkpoints only quiz what **that guide** taught. Do not quiz "Don't add yet" names or later phases.
 - First-tool demo: print inside the Python function so the learner can see the process ran.
 - `os.getenv("GEMINI_MODEL", "gemini/gemini-3.5-flash-lite")` — the default keeps the type `str`.
 - Python topics are taught just-in-time: a short box with example code, inside the guide that first needs the topic (async `run`/`await` in Phase 0; gather / concurrency in Phase 5; decorators in Phase 7). setup.md carries the "Coming from pip?" and "Python you should be comfortable with" sections.

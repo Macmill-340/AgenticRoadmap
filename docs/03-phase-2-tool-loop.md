@@ -139,7 +139,7 @@ Do this **on paper or in a comment** before any Pydantic `model_json_schema()`. 
 }
 ```
 
-That shape **is** the tool. Descriptions are how the model decides *when* to call it.
+That shape **is** the tool. The JSON `description` is the same job as the Python **docstring** in Phase 0: the model reads it to decide *when* to call. Write *when*, not a lecture on what addition is.
 
 Optional second tool (stub is fine):
 

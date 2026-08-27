@@ -132,6 +132,8 @@ def search_notes(query: str) -> str:
 
 ## Segment 2 — Schema by hand (30 seconds, you've done this)
 
+Same job as Phase 0's docstring: the JSON `description` is what the model reads to decide *when* to retrieve. Write *when*, not a lecture on search engines.
+
 ```python
 SEARCH_TOOL = {
     "type": "function",
@@ -152,7 +154,7 @@ class SearchArgs(BaseModel):
     query: str
 ```
 
-The description is doing the routing. Make it say *when* to use the tool, not *what* a search engine is.
+Read that description out loud. If it does not say *when*, the model will retrieve for everything — or never.
 
 ## Segment 3 — Same loop, one more branch
 
@@ -247,6 +249,6 @@ Done when it retrieves for the first, answers plainly for the second, and never 
 1. What did you add to Phase 2's loop to make it a RAG agent?
 2. Who decides when to retrieve — your code or the model?
 3. Why must the engine live in *this* venv rather than importing `agents/foundation/02_tool_loop.py`?
-4. What changes in Phase 7 — the loop, the tool, or the concept?
+4. What text steers the model toward `search_notes` instead of `add`?
 
-Answers: (1) one function + one JSON schema entry in `TOOLS`. (2) the model, steered entirely by your schema descriptions. (3) isolated uv projects by design; copying keeps each group self-contained. (4) infrastructure only: graph instead of `while`, `ToolNode` instead of your dispatch, `@tool` instead of a hand-written schema — the concept is already built.
+Answers: (1) one function + one JSON schema entry in `TOOLS`. (2) the model, steered entirely by your schema descriptions. (3) isolated uv projects by design; copying keeps each group self-contained. (4) the `description` on `search_notes` (same job as a tool docstring).

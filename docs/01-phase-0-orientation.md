@@ -65,16 +65,6 @@ An agent = **model + tools + a loop**.
 
 An agent is an LLM plus tools plus a loop: the model either answers or emits a structured call; your code runs the function; the result goes back; repeat until it answers. Here the framework owns the loop. Phase 2 will make you own it.
 
-```mermaid
-flowchart LR
-  U[User question] --> A[FunctionAgent]
-  A --> L[LiteLLM]
-  L --> G[Gemini]
-  G -->|chooses tool| T[multiply]
-  T -->|number| G
-  G -->|text| U
-```
-
 ---
 
 ## Segment — one tool, live
@@ -92,6 +82,8 @@ asyncio.run(main())                  # start the event loop (scripts only)
 ```
 
 That's all you need here. Phase 5 covers running several waits at once.
+
+A **tool** is a normal Python function you hand to the agent. The model never sees your source code. It sees three things: the function **name**, the **argument types**, and the **docstring** — the `"""..."""` line under `def`. That text is how Gemini decides *when* to call it. Write it like a label on a toolbox, not a note to yourself.
 
 ```python
 import asyncio
@@ -142,6 +134,16 @@ uv run python 00_orientation.py
 3. Your function ran.
 4. Result went back; model wrote the final sentence.
 
+```mermaid
+flowchart LR
+  U[User question] --> A[FunctionAgent]
+  A --> L[LiteLLM]
+  L --> G[Gemini]
+  G -->|chooses tool| T[multiply]
+  T -->|number| G
+  G -->|text| U
+```
+
 **Common failures**
 
 | Symptom | Fix |
@@ -159,6 +161,6 @@ Do not add chat history, RAG, or a second tool here.
 
 1. What three things did the model see besides the user question?
 2. Who executed `multiply` — the model or your process?
-3. Why not `AgentWorkflow` in this phase?
+3. Who owns the loop here — you or `FunctionAgent`?
 
-Answers: (1) tool name, docstring, argument types; (2) your process; (3) `FunctionAgent` is the one-tool starter; `AgentWorkflow` is multi-agent.
+Answers: (1) tool name, docstring, argument types; (2) your process — the `multiply(...)` print proves it; (3) `FunctionAgent`. Phase 2 is when you own the loop.

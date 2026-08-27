@@ -19,6 +19,7 @@ A new session writing any later phase **must re-fetch official docs**. Do not tr
 11. Style pass before done: every guide follows the writing style in `AGENTS.md` — content-bearing headers, no banned words, expected output after every code block.
 12. Never write or commit session dumps / chat exports (`session-ses_*.md`, transcripts). Delete them if they appear — do not add them to `.gitignore` to hide them.
 13. When this session locks a new convention, write it into `AGENTS.md` (and this file if it is a write-time rule) **in the same pass**. A new session must not need prior chat.
+14. Checkpoints only quiz what that guide taught. Explain tool docstrings (the model reads them) before the tool snippet. No `#` comments in learner snippets to teach.
 
 ## Always fetch (every batch)
 

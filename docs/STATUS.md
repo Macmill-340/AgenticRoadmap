@@ -74,7 +74,8 @@ Same rule as smolagents (Phase 8): no folder, no doc, no code until requested. P
 - Chat Completions via `litellm.completion` for Phases 2–7. Responses API is Phase 9.
 - Phase 0 uses `FunctionAgent` + `LiteLLM`, not `AgentWorkflow`, not Ollama.
 - uv projects per folder: `[project] name` is `course-<folder>` (never the PyPI package name). Direct deps in each `agents/*` `pyproject.toml`, exact pins in the committed `uv.lock`. `uv sync` heals a venv to those pins; `uv add` extends manifest + lock + venv together. The root `pyproject.toml` exists only so PyCharm shows the repo root (no dependencies) — never `uv add` / `uv sync` at the repo root.
-- Every phase doc gets exactly one mermaid (mental map, not decoration), per the locked template.
+- Every phase doc gets exactly one mermaid (mental map, not decoration), per the locked template. If it maps the snippet they just ran, it sits after Expected / What just moved.
+- Checkpoints only quiz what that guide taught. Tool docstrings are explained before the snippet (the model reads them).
 - Every phase guide gets `## Skeleton` after Why: one recitable sentence + 4–6 ingredient steps. Append that phase's line to README's `## Spine` in the same pass.
 - `## Try this` rule (see AGENTS.md): optional milestone prompts only — Phases 2, 3, 6, 7/7b. One situation + "Done when …" + "skip or invent your own". Draft the prompt during planning; place the section after Checkpoint when writing. Locked prompts: P2 = keep `add`, add one invented tool, one user line needing both; P3 = preference told on turn 1 must survive capping by turn 4; P6 = agent answers from your own three files in `data/` or chats, retrieval never hard-coded; P7/7b = one real approval via `interrupt()` before a write tool, or two specialists on a task you actually care about.
 - MiniLM `all-MiniLM-L6-v2` truncates at ~256 tokens — this replaces the old Ollama `num_ctx` truncation demo in Phases 4–5.
