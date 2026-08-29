@@ -1,6 +1,6 @@
 # Status
 
-Last grounded: 2026-08-23
+Last grounded: 2026-08-27
 
 Read order for a new session: `AGENTS.md` → this file → `docs/MAINTENANCE.md` → first unchecked box below.
 Before writing any batch: re-fetch that batch's URLs from `docs/MAINTENANCE.md`. Do not skip the fetch list.
@@ -80,3 +80,4 @@ Same rule as smolagents (Phase 8): no folder, no doc, no code until requested. P
 - `## Try this` rule (see AGENTS.md): optional milestone prompts only — Phases 2, 3, 6, 7/7b. One situation + "Done when …" + "skip or invent your own". Draft the prompt during planning; place the section after Checkpoint when writing. Locked prompts: P2 = keep `add`, add one invented tool, one user line needing both; P3 = preference told on turn 1 must survive capping by turn 4; P6 = agent answers from your own three files in `data/` or chats, retrieval never hard-coded; P7/7b = one real approval via `interrupt()` before a write tool, or two specialists on a task you actually care about.
 - MiniLM `all-MiniLM-L6-v2` truncates at ~256 tokens — this replaces the old Ollama `num_ctx` truncation demo in Phases 4–5.
 - Writing style is locked in `AGENTS.md`: content-bearing headers, banned-words list, style pass before a guide counts as done (MAINTENANCE rule 11). Python topics are just-in-time boxes with example code — async `run`/`await` in Phase 0, gather / concurrency in Phase 5, decorator box in Phase 7; setup.md carries "Coming from pip?" and the Python checklist.
+- Learner `.py` files are gitignored. Before marking a guide done: `python scripts/check_guides.py` from the repo root.

@@ -14,10 +14,22 @@ Thumbs.db
 # Local-only files (not teaching packets)
 agentic-frameworks-teaching-roadmap.md
 
+# Learner-written phase files (docs-first; local QA copies)
+agents/foundation/00_orientation.py
+agents/foundation/02_tool_loop.py
+agents/foundation/03_state.py
+agents/llamaindex/04_rag_fast.py
+agents/llamaindex/05_rag_decomposed.py
+agents/llamaindex/06_rag_as_tool.py
+agents/langgraph/07_graph.py
+agents/langgraph/07b_multi_agent.py
+agents/langgraph/09_conventions.py
+
 # Local model / RAG / checkpoint artifacts
 .cache/
 chroma/
 chroma_db/
+chroma_db_handmade/
 *.sqlite3
 *.db
 

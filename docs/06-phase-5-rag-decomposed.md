@@ -1,6 +1,6 @@
 # Phase 5 — RAG decomposed (by hand)
 
-Last grounded: 2026-08-23  
+Last grounded: 2026-08-27  
 Prereq files: `docs/05-phase-4-rag-fast.md`  
 Fetch before writing:  
 - https://docs.trychroma.com/docs/overview/getting-started  
@@ -207,11 +207,11 @@ print(resp.choices[0].message.content)
 
 `async def` marks a function that can **pause**. When it hits `await`, it hands control back to the event loop, which runs something else and comes back later. That is *concurrency* (overlapping waits), not *parallelism* (simultaneous work). Perfect when the wait is external — an HTTP call, a database. Useless for pure CPU work, because CPU code never pauses to yield.
 
-The two tools this segment uses:
+The two tools this segment uses: `asyncio.gather` starts both waits and resumes when both finish; `asyncio.to_thread` pushes blocking code off the event loop's thread.
 
 ```python
-await asyncio.gather(task_a, task_b)    # start both, resume when both finish
-await asyncio.to_thread(blocking_fn)    # push blocking code off the event loop's thread
+await asyncio.gather(task_a, task_b)
+await asyncio.to_thread(blocking_fn)
 ```
 
 That's all you need. The experiment below will show you when this helps and when it doesn't.
@@ -225,7 +225,6 @@ import time
 
 async def embed_concurrent(chunks: list[str]) -> None:
     loop = asyncio.get_running_loop()
-    # offload each encode to a thread so gather has something to await
     await asyncio.gather(*(loop.run_in_executor(None, model.encode, c) for c in chunks))
 
 
@@ -237,13 +236,13 @@ def timeit(label, fn):
 
 sample = all_chunks[:32]
 timeit("sequential", lambda: [model.encode(c) for c in sample])
-timeit("batched",   lambda: model.encode(sample))
-asyncio.run(timeit("gather+threads", lambda: asyncio.run(embed_concurrent(sample))))
+timeit("batched", lambda: model.encode(sample))
+timeit("gather+threads", lambda: asyncio.run(embed_concurrent(sample)))
 ```
 
 Typical result on CPU: **batched wins big** (one forward pass over many inputs), gather+threads barely differs from sequential (GIL + CPU-bound). Keep `asyncio.gather` in your pocket for HTTP-based embedders — the pattern transfers unchanged; only the backend changes.
 
-Extra beat, 60 seconds: stuff **only `decoy-tools.txt`** chunks into the Segment 5 prompt and ask about Project Nightjar. You will get a fluent, confident, **wrong** answer. Retrieval quality bounds generation quality — that is groundedness.
+Extra beat, 60 seconds: stuff **only `decoy-tools.txt`** chunks into the Segment 5 prompt and ask about Project Nightjar. You will get a fluent wrong answer, or a refusal that the notes don't contain it. Both prove the same point: generation is bounded by what you stuffed in. That is groundedness.
 
 Token-vs-character, stated once: MiniLM truncates around **256 tokens** (~roughly 1000 chars of English); Gemini counts tokens too. Char budgets are a teaching proxy, not a production unit.
 

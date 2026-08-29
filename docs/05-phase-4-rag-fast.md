@@ -1,6 +1,6 @@
 # Phase 4 — RAG fast (LlamaIndex)
 
-Last grounded: 2026-08-23  
+Last grounded: 2026-08-27  
 Prereq files: `docs/03-phase-2-tool-loop.md`, `docs/04-phase-3-state-memory.md`  
 Fetch before writing:  
 - https://docs.llamaindex.ai/en/stable/module_guides/supporting_modules/settings/  
@@ -145,13 +145,13 @@ DATA_DIR = Path(__file__).resolve().parents[2] / "data"
 
 docs = SimpleDirectoryReader(input_dir=str(DATA_DIR)).load_data()
 print(len(docs), "documents")
-for d in docs[:3]:
+for d in docs:
     print("-", d.metadata.get("file_name"), len(d.text), "chars")
 ```
 
 `Path(__file__)...parents[2]` lands on the repo root regardless of where you launch `uv run` from (Windows-friendly; no cwd dependence).
 
-**Expected:** three documents (`agent-loop.txt`, `decoy-tools.txt`, `rag.txt`). If zero, the path is wrong — print `DATA_DIR`.
+**Expected:** four documents (`agent-loop.txt`, `decoy-tools.txt`, `rag.txt`, `overlap-demo.txt`). The Nightjar memo is for Phase 5; it can sit unused today. If zero, the path is wrong — print `DATA_DIR`.
 
 ## Segment 3 — Persist to Chroma and query
 

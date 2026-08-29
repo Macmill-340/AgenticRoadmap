@@ -160,7 +160,8 @@ AGENTS.md        starting point for AI sessions extending the course
 - Default LlamaIndex `Settings` to OpenAI. Set `Settings.llm` and `Settings.embed_model` every time.
 - Wrap `interrupt()` in bare `try/except`. HITL is `interrupt()` + `Command(resume=...)`, not `input()`.
 - Commit secrets. Use `.env` (from `.env.example` via `cp .env.example .env`). Never commit `.env`.
-- Do not write the learner's `.py` files — every guide tells the learner which file to create. STATUS tracks docs; learners track code.
+- Do not write the learner's `.py` files — every guide tells the learner which file to create. STATUS tracks docs; learners track code. Those filenames are gitignored so a local QA copy cannot be committed by accident.
+- Before marking a phase guide done, run `python scripts/check_guides.py` from the repo root.
 - Never write or commit session dumps / chat exports (`session-ses_*.md`, transcripts). Delete them if they appear — do not add them to `.gitignore` to hide them.
 - Never `New-Item -Force` on a learner file. Never set `[project] name` to a PyPI package the folder depends on — use `course-<folder>`.
 

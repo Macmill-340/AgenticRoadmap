@@ -1,6 +1,6 @@
 # Phase 6 — RAG as a tool (the glue)
 
-Last grounded: 2026-08-23  
+Last grounded: 2026-08-27  
 Prereq files: `docs/03-phase-2-tool-loop.md`, `docs/05-phase-4-rag-fast.md`  
 Fetch before writing:  
 - https://docs.litellm.ai/docs/providers/gemini  
@@ -89,7 +89,6 @@ flowchart TD
 ## Segment 1 — Engine (from Phase 4, trimmed)
 
 ```python
-import json
 import os
 from pathlib import Path
 
@@ -99,7 +98,8 @@ from pydantic import BaseModel, ValidationError
 
 load_dotenv()
 
-from llama_index.core import Settings, VectorStoreIndex
+from litellm import completion
+from llama_index.core import Settings, SimpleDirectoryReader, StorageContext, VectorStoreIndex
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.llms.litellm import LiteLLM
 from llama_index.vector_stores.chroma import ChromaVectorStore
@@ -116,11 +116,22 @@ Settings.embed_model = HuggingFaceEmbedding(
     device="cpu",
 )
 
+DATA_DIR = Path(__file__).resolve().parents[2] / "data"
 CHROMA_PATH = Path(__file__).resolve().parent / "chroma_db"
 
 client = chromadb.PersistentClient(path=str(CHROMA_PATH))
 collection = client.get_or_create_collection("course_docs")
-index = VectorStoreIndex.from_vector_store(ChromaVectorStore(chroma_collection=collection))
+vector_store = ChromaVectorStore(chroma_collection=collection)
+
+if collection.count() == 0:
+    docs = SimpleDirectoryReader(input_dir=str(DATA_DIR)).load_data()
+    index = VectorStoreIndex.from_documents(
+        docs,
+        storage_context=StorageContext.from_defaults(vector_store=vector_store),
+    )
+else:
+    index = VectorStoreIndex.from_vector_store(vector_store)
+
 engine = index.as_query_engine(similarity_top_k=3)
 
 
@@ -128,7 +139,7 @@ def search_notes(query: str) -> str:
     return str(engine.query(query))
 ```
 
-**Expected:** imports clean; nothing runs yet. If `chroma_db/` does not exist, run Phase 4 once to build it (or copy its build block above `from_vector_store`).
+**Expected:** imports clean; nothing runs yet. Empty collection → the `if` rebuilds from `data/` (same as Phase 4). Already filled → reload, no re-embed.
 
 ## Segment 2 — Schema by hand (30 seconds, you've done this)
 
@@ -158,13 +169,57 @@ Read that description out loud. If it does not say *when*, the model will retrie
 
 ## Segment 3 — Same loop, one more branch
 
-Bring over from `02_tool_loop.py`: `TOOLS` (now `[ADD_TOOL, SEARCH_TOOL]`), `AddArgs`, `run_add`, `MAX_STEPS`. The only new lines are in the dispatch:
+Copy `add` from Phase 2, then register both tools. The only new lines in the loop are the `search_notes` branch:
 
 ```python
+def add(a: float, b: float) -> float:
+    return a + b
+
+
+class AddArgs(BaseModel):
+    a: float
+    b: float
+
+
+def run_add(raw_json: str) -> str:
+    try:
+        args = AddArgs.model_validate_json(raw_json)
+    except ValidationError as exc:
+        return f"Invalid arguments: {exc}"
+    return str(add(args.a, args.b))
+
+
+ADD_TOOL = {
+    "type": "function",
+    "function": {
+        "name": "add",
+        "description": "Add two numbers and return the sum.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "a": {"type": "number", "description": "First addend"},
+                "b": {"type": "number", "description": "Second addend"},
+            },
+            "required": ["a", "b"],
+        },
+    },
+}
+
+TOOLS = [ADD_TOOL, SEARCH_TOOL]
 MAX_STEPS = 8
 
 
 def run_agent(state: dict, user_text: str) -> str:
+    if not state["messages"]:
+        state["messages"].append(
+            {
+                "role": "system",
+                "content": (
+                    "Use search_notes for questions about the user's saved notes. "
+                    "Use add for arithmetic. Answer directly otherwise."
+                ),
+            }
+        )
     state["messages"].append({"role": "user", "content": user_text})
     for _step in range(MAX_STEPS):
         resp = completion(
@@ -193,8 +248,6 @@ def run_agent(state: dict, user_text: str) -> str:
             )
     raise RuntimeError(f"Agent exceeded max_steps={MAX_STEPS}")
 ```
-
-(`completion` imported from litellm as in Phase 2.)
 
 **Run it:**
 
@@ -234,15 +287,9 @@ That's the whole phase. If you feel like adding memory or a second retriever —
 - No rerank, no new tools beyond `add`.
 - No new packages.
 
-## Try this
-
-Put **three of your own** short `.txt` files in `data/` — real ones: class notes, a recipe, an angry rant about tabs vs spaces, anything. Don't tell the agent which file is which. Ask it something only those files know, then ask something they don't cover.
-
-Done when it retrieves for the first, answers plainly for the second, and never treats `search_notes` as mandatory. Skip it or invent your own scenario — that is the point.
-
 ## Your finished file
 
-`agents/llamaindex/06_rag_as_tool.py` — env + Settings, engine build, `search_notes`, `SEARCH_TOOL` + `SearchArgs`, copied `add` pieces, unified `run_agent`, demo `__main__`. Roughly 100–120 lines (most of it copied from earlier phases — that is the point).
+`agents/llamaindex/06_rag_as_tool.py` — env + Settings, engine build (rebuild if empty), `search_notes`, `SEARCH_TOOL` + `SearchArgs`, copied `add` pieces, unified `run_agent`, demo `__main__`. Roughly 100–140 lines (most of it copied from earlier phases — that is the point).
 
 ## Checkpoint
 
@@ -252,3 +299,11 @@ Done when it retrieves for the first, answers plainly for the second, and never 
 4. What text steers the model toward `search_notes` instead of `add`?
 
 Answers: (1) one function + one JSON schema entry in `TOOLS`. (2) the model, steered entirely by your schema descriptions. (3) isolated uv projects by design; copying keeps each group self-contained. (4) the `description` on `search_notes` (same job as a tool docstring).
+
+---
+
+## Try this
+
+Put **three of your own** short `.txt` files in `data/` — real ones: class notes, a recipe, an angry rant about tabs vs spaces, anything. Don't tell the agent which file is which. Ask it something only those files know, then ask something they don't cover.
+
+Done when it retrieves for the first, answers plainly for the second, and never treats `search_notes` as mandatory. Skip it or invent your own scenario — that is the point.

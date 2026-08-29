@@ -1,6 +1,6 @@
 # Phase 1 — How decoding actually works
 
-Last grounded: 2026-08-21  
+Last grounded: 2026-08-27  
 Prereq files: `docs/01-phase-0-orientation.md`  
 Fetch before writing:  
 - https://huggingface.co/learn/agents-course/unit1/what-are-llms  
@@ -89,17 +89,7 @@ You do not implement these. You set them on the API (`temperature`, `top_p`, …
 
 ## Segment 3 — Tool-calling is the same loop
 
-Phase 0 did not grow a separate “reasoner.” The next-token process was aimed at tokens that look like a function call.
-
-```mermaid
-flowchart LR
-  A[Messages + tool schemas] --> B[Same decode loop]
-  B --> C{Picked tokens look like}
-  C -->|prose| D[Assistant text]
-  C -->|tool JSON / tool_calls| E[Your code runs the function]
-  E --> F[Result appended as a tool message]
-  F --> B
-```
+Phase 0 did not grow a separate “reasoner.” The next-token process was aimed at tokens that look like a function call. Messages plus tool schemas go through the same decode loop. Prose tokens become assistant text. Tokens that look like a tool call make *your* code run the function, append the result as a tool message, and continue.
 
 Two ways the industry steers that:
 

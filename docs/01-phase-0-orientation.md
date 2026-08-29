@@ -1,6 +1,6 @@
 # Phase 0 — Orientation
 
-Last grounded: 2026-08-21  
+Last grounded: 2026-08-27  
 Prereq files: `AGENTS.md`, `docs/00-setup.md`  
 Fetch before writing:  
 - https://docs.llamaindex.ai/en/stable/understanding/agent/  
@@ -73,12 +73,12 @@ An agent is an LLM plus tools plus a loop: the model either answers or emits a s
 
 ### Async in 20 seconds
 
-`FunctionAgent.run` waits on the network, so it is `async`. Three words:
+`FunctionAgent.run` waits on the network, so it is `async`. Three words: `async def` marks a function that can pause; `await` pauses until Gemini answers; `asyncio.run` starts the event loop (scripts only).
 
 ```python
-async def main() -> None:            # this function can pause
-    response = await agent.run(...)  # pause here until Gemini answers
-asyncio.run(main())                  # start the event loop (scripts only)
+async def main() -> None:
+    response = await agent.run(...)
+asyncio.run(main())
 ```
 
 That's all you need here. Phase 5 covers running several waits at once.

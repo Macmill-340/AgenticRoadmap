@@ -1,6 +1,6 @@
 # Phase 2 — The raw tool-calling loop
 
-Last grounded: 2026-08-21  
+Last grounded: 2026-08-27  
 Prereq files: `docs/00-setup.md`, `docs/01-phase-0-orientation.md`, `docs/02-phase-1-decoding.md`  
 Fetch before writing:  
 - https://docs.litellm.ai/docs/  
@@ -50,9 +50,9 @@ Every later framework (LlamaIndex `FunctionAgent`, LangGraph `ToolNode`) is this
 
 ```python
 MODEL = "gemini/gemini-3.5-flash-lite"
-# MODEL = "openai/gpt-4o-mini"
-# MODEL = "ollama/qwen3"  # needs Ollama running
 ```
+
+Swap later by changing `MODEL` only — `openai/gpt-4o-mini`, or `ollama/qwen3` if Ollama is running.
 
 ## Skeleton
 
@@ -341,6 +341,12 @@ OpenAI Chat Completions and Anthropic are **not** interchangeable. LiteLLM hides
 **`finish_reason`.** `"stop"` = done. `"tool_calls"` = you have work. `"length"` = token cap.
 
 Do not add streaming or retries in this file. Do not start the LiteLLM proxy.
+
+## Common failures
+
+| Symptom | Cause / fix |
+|---|---|
+| Pydantic serializer warning on `tool_calls` | Harmless. Gemini extra fields on the LiteLLM `Message` you appended. The tool still ran. Pydantic has no env mute like `LITELLM_LOG` — ignore it. |
 
 ---
 

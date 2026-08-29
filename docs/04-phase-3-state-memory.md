@@ -1,6 +1,6 @@
 # Phase 3 — State and memory by hand
 
-Last grounded: 2026-08-23  
+Last grounded: 2026-08-27  
 Prereq files: `docs/00-setup.md`, `docs/02-phase-1-decoding.md`, `docs/03-phase-2-tool-loop.md`  
 Fetch before writing:  
 - https://docs.litellm.ai/docs/completion/token_usage  
@@ -130,12 +130,12 @@ History alone is fragile (Segment 4 proves it). Add a second channel: facts the 
 ```python
 from typing import TypedDict
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 
 
 class AgentState(TypedDict):
-    messages: list           # chat turns (dicts or LiteLLM message objects)
-    facts: dict[str, str]    # durable, survives trimming
+    messages: list
+    facts: dict[str, str]
 
 
 class RememberArgs(BaseModel):
@@ -161,7 +161,7 @@ REMEMBER_TOOL = {
 
 
 def render_system(state: AgentState) -> str:
-    base = "You are a concise assistant. Use the remember tool for facts the user asks you to keep."
+    base = "You are a concise assistant. Call remember only when the user explicitly says remember, keep, or store a fact."
     if state["facts"]:
         lines = "\n".join(f"- {k}: {v}" for k, v in sorted(state["facts"].items()))
         base += f"\n\nKnown facts:\n{lines}"
@@ -189,9 +189,10 @@ The system message now contains `Known facts:\n- user_name: Ada`.
 
 ## Segment 3 — Same loop as Phase 2, now operating on state
 
-Copy `add`, `AddArgs`, its tool schema, and `run_add` from your `02_tool_loop.py`. Two changes: tools gain `remember`, and `run_agent` takes and mutates `state` instead of building `messages` locally.
+Copy `add`, `AddArgs`, its tool schema (name it `ADD_TOOL`), and `run_add` from your `02_tool_loop.py`. Two changes: tools gain `remember`, and `run_agent` takes and mutates `state` instead of building `messages` locally.
 
 ```python
+TOOLS = [ADD_TOOL, REMEMBER_TOOL]
 MAX_STEPS = 8
 
 
@@ -230,8 +231,8 @@ state: AgentState = {"messages": [], "facts": {}}
 
 print(run_agent(state, "My name is Ada. Please remember it."))
 print(run_agent(state, "What is my name?"))
-print(run_agent(state, "What is 41 + 1?"))   # add still works
-print(state["facts"])                        # {'user_name': 'Ada'}
+print(run_agent(state, "What is 41 + 1?"))
+print(state["facts"])
 ```
 
 (`ValidationError` comes from `pydantic`, as in Phase 2.)
@@ -245,19 +246,22 @@ print(state["facts"])                        # {'user_name': 'Ada'}
 | Name answered but `facts` empty | Model answered from history. Tighten `render_system`: "Call remember immediately when the user shares a personal fact." |
 | `OPENAI_API_KEY` error | You drifted onto defaults — `model=MODEL` and `GEMINI_API_KEY` only. |
 | Tool loop runs away | Same guard as Phase 2: `max_steps` raises; don't soften it. |
+| 429 / rate limit | Free Gemini is ~15 requests/minute. Wait a minute, then rerun. Run `demo(enforce_cap)` and `demo(enforce_summarize)` as two separate passes if needed. |
+| Cap demo still knows Ada | The model called `remember` without being asked. Tighten `render_system` so remember fires only on an explicit ask. |
+| Missing corresponding tool call | Cap/summarize left a `role: tool` message without its parent. Sweep leading tool messages after the trim, same as `enforce_cap`. |
 
 ---
 
 ## Segment 4 — Deepening: token budget, cap vs summarize
 
-Gemini's context window is enormous — you will never overflow it in a demo. So the budget is **artificial on purpose**: `TOKEN_BUDGET = 400` tokens stands in for any hard constraint (a smaller local model, cost caps, latency). The mechanics are identical at real scale.
+Gemini's context window is enormous — you will never overflow it in a demo. So the budget is **artificial on purpose**: `TOKEN_BUDGET = 150` tokens stands in for any hard constraint (a smaller local model, cost caps, latency). The mechanics are identical at real scale. Keep the padding loop short — free Gemini allows about 15 requests per minute.
 
 LiteLLM counts for you — no extra dependency:
 
 ```python
 from litellm import completion, token_counter
 
-TOKEN_BUDGET = 400
+TOKEN_BUDGET = 150
 
 
 def over_budget(state: AgentState) -> bool:
@@ -269,14 +273,18 @@ def over_budget(state: AgentState) -> bool:
 ### Strategy A — cap (drop oldest)
 
 ```python
+def role_of(m) -> str:
+    return m["role"] if isinstance(m, dict) else m.role
+
+
 def enforce_cap(state: AgentState) -> None:
     while state["messages"] and over_budget(state):
         state["messages"].pop(0)
-        while state["messages"] and state["messages"][0]["role"] == "tool":
-            state["messages"].pop(0)   # never orphan a tool result
+        while state["messages"] and role_of(state["messages"][0]) == "tool":
+            state["messages"].pop(0)
 ```
 
-Dropping an assistant message that carried `tool_calls` leaves its `role: "tool"` replies parentless — most providers reject that, so sweep them too.
+Dropping an assistant message that carried `tool_calls` leaves its `role: "tool"` replies parentless — most providers reject that, so sweep them too. `role_of` handles both dicts you appended and LiteLLM message objects.
 
 ### Strategy B — summarize (compress oldest into facts)
 
@@ -284,18 +292,18 @@ Dropping an assistant message that carried `tool_calls` leaves its `role: "tool"
 def enforce_summarize(state: AgentState, keep_last: int = 4) -> None:
     if over_budget(state) is False or len(state["messages"]) <= keep_last:
         return
-    old, state["messages"] = (
-        state["messages"][:-keep_last],
-        state["messages"][-keep_last:],
-    )
-
-    def who(m) -> str:
-        return m["role"] if isinstance(m, dict) else m.role
+    old = state["messages"][:-keep_last]
+    kept = state["messages"][-keep_last:]
+    while kept and role_of(kept[0]) == "tool":
+        old.append(kept.pop(0))
+    if not kept:
+        return
+    state["messages"] = kept
 
     def text_of(m) -> str:
         return (m.get("content") if isinstance(m, dict) else m.content) or ""
 
-    transcript = "\n".join(f"{who(m)}: {text_of(m)}" for m in old)
+    transcript = "\n".join(f"{role_of(m)}: {text_of(m)}" for m in old)
     summary = completion(
         model=MODEL,
         api_key=API_KEY,
@@ -314,16 +322,25 @@ Summaries land in `facts`, so they ride along with every rendered system prompt 
 
 ### The experiment
 
-Call your chosen `enforce_*` at the top of `run_agent`. Pad the conversation so the budget bites, then interrogate:
+Add an `enforce` argument to `run_agent` and call it **before** appending the new user turn — otherwise the demo below never trims:
+
+```python
+def run_agent(state: AgentState, user_text: str, enforce=None) -> str:
+    if enforce is not None:
+        enforce(state)
+    state["messages"].append({"role": "user", "content": user_text})
+```
+
+Keep the rest of `run_agent` as in Segment 3. Pad the conversation so the budget bites, then interrogate. Do **not** ask the model to remember — history is the only carrier:
 
 ```python
 def demo(enforce) -> None:
     state: AgentState = {"messages": [], "facts": {}}
-    run_agent(state, "My name is Ada.")          # plain statement, NO remember
-    for i in range(12):
-        run_agent(state, f"One sentence about the number {i}, please.")
-    answer = run_agent(state, "What is my name?")
-    print(type(enforce).__name__, "->", answer)
+    run_agent(state, "My name is Ada.", enforce=enforce)
+    for i in range(5):
+        run_agent(state, f"One sentence about the number {i}, please.", enforce=enforce)
+    answer = run_agent(state, "What is my name?", enforce=enforce)
+    print(enforce.__name__, "->", answer)
     print("facts:", state["facts"], "| turns:", len(state["messages"]))
 
 
@@ -357,14 +374,14 @@ Print `len(state["messages"])` before/after trimming so the mechanism is visible
 
 ## Your finished file
 
-`agents/foundation/03_state.py` — `MODEL`, `TOKEN_BUDGET`, `AgentState`, `RememberArgs`/`AddArgs`, `TOOLS` (add + remember), `render_system`, `build_messages`, `over_budget`, `enforce_cap`, `enforce_summarize`, `run_agent`, `demo`, `__main__`. Roughly 90–110 lines.
+`agents/foundation/03_state.py` — `MODEL`, `TOKEN_BUDGET`, `AgentState`, `RememberArgs`/`AddArgs`, `TOOLS` (add + remember), `render_system`, `build_messages`, `over_budget`, `role_of`, `enforce_cap`, `enforce_summarize`, `run_agent` (with `enforce=`), `demo`, `__main__`. Roughly 90–120 lines.
 
 ## Checkpoint
 
 1. In Segment 1, what exactly "remembered" Ada — and where did it go when you deleted it?
 2. Why does the summarized name survive `enforce_summarize` but not `enforce_cap`?
 3. If the model calls `remember` mid-loop, when does the new fact reach the model?
-4. `TOKEN_BUDGET = 400` is fake. In production, where do the two real numbers come from?
+4. `TOKEN_BUDGET = 150` is fake. In production, where do the two real numbers come from?
 
 Answers: (1) the `messages` list — it was the only carrier; deleting it deleted the memory. (2) summarize moves old content into `facts`, which is rendered into the system prompt and never trimmed; cap deletes outright. (3) on the *next* `build_messages()` — i.e., the next `completion()` call, possibly the same turn's next loop iteration. (4) the model's context window (provider spec / `litellm.model_cost`) and your own cost/latency ceiling; measured against `usage.prompt_tokens` or `token_counter`.
 

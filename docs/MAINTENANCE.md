@@ -1,6 +1,6 @@
 # Maintenance — research before you write
 
-Last grounded: 2026-08-23
+Last grounded: 2026-08-27
 
 A new session writing any later phase **must re-fetch official docs**. Do not treat this file, prior chat, or `agentic-frameworks-teaching-roadmap.md` (local only — not in the repo) as API truth.
 
@@ -20,6 +20,7 @@ A new session writing any later phase **must re-fetch official docs**. Do not tr
 12. Never write or commit session dumps / chat exports (`session-ses_*.md`, transcripts). Delete them if they appear — do not add them to `.gitignore` to hide them.
 13. When this session locks a new convention, write it into `AGENTS.md` (and this file if it is a write-time rule) **in the same pass**. A new session must not need prior chat.
 14. Checkpoints only quiz what that guide taught. Explain tool docstrings (the model reads them) before the tool snippet. No `#` comments in learner snippets to teach.
+15. Before marking a phase guide done, run `python scripts/check_guides.py` from the repo root (stdlib only). It asserts Skeleton-after-Why, one mermaid, Checkpoint, Try-this placement, banned words, and no `#` comments inside python fences.
 
 ## Always fetch (every batch)
 
