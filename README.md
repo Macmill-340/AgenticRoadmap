@@ -18,8 +18,8 @@ Guides marked *pending* are written batch by batch, each grounded against curren
 | 4 | RAG fast (LlamaIndex + Chroma) | abstraction-first | `04_rag_fast.py` | [`docs/05-phase-4-rag-fast.md`](docs/05-phase-4-rag-fast.md) — done |
 | 5 | RAG decomposed | open the hood | `05_rag_decomposed.py` | [`docs/06-phase-5-rag-decomposed.md`](docs/06-phase-5-rag-decomposed.md) — done |
 | 6 | RAG as a tool | glue | `06_rag_as_tool.py` | [`docs/07-phase-6-rag-as-tool.md`](docs/07-phase-6-rag-as-tool.md) — done |
-| 7 | LangGraph single-agent graph | abstraction, then peek | `07_graph.py` | *pending* |
-| 7b | Multi-agent (supervisor, then handoff contrast) | abstraction | `07b_multi_agent.py` | *pending* |
+| 7 | LangGraph single-agent graph | abstraction, then peek | `07_graph.py` | [`docs/08-phase-7-langgraph.md`](docs/08-phase-7-langgraph.md) — done |
+| 7b | Multi-agent (supervisor, then handoff contrast) | abstraction | `07b_multi_agent.py` | [`docs/09-phase-7b-multi-agent.md`](docs/09-phase-7b-multi-agent.md) — done |
 | 8 | smolagents: code-as-action | optional side quest | `08_code_vs_tools.py` | *pending* |
 | 9 | Modern conventions (Responses API, `create_agent`) | delta | `09_conventions.py` | *pending* |
 
@@ -34,8 +34,10 @@ Recite this after any break: one sentence per layer, then the recipe.
 - **RAG** — load → embed → store → retrieve → generate (+ optional rerank).
 - **RAG internals** — Phase 4's one-liners are just load / chunk / embed / query functions.
 - **RAG as a tool** — the engine becomes one more tool inside your Phase 2 loop.
+- **Graph** — the loop as boxes: state in, nodes work, edges decide next. A checkpointer keeps the thread; `interrupt` pauses it.
+- **Supervisor** — one agent whose tools are other agents.
 
-Later phases (LangGraph, multi-agent, conventions) append their line here as each guide is written.
+Later phases (conventions) append their line here as each guide is written.
 
 ## How to follow
 

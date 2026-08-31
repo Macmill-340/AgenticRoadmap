@@ -34,7 +34,7 @@ New terminals (VS Code, Cursor) usually open at the repo root; PyCharm sometimes
 No new packages. `sentence-transformers` and `chromadb` are already there.
 
 Suggested file: `agents/llamaindex/05_rag_decomposed.py`  
-Mode: **decompose**. No LlamaIndex in this file. Every Phase 4 one-liner becomes a function you wrote.
+Mode: **decompose**. No LlamaIndex in this file. Every Phase 4 one-liner becomes a line you wrote.
 
 ## What you'll build
 
@@ -46,7 +46,7 @@ Phase 4 gave you five names and five one-liners. Until you write each stage, `in
 
 ## Skeleton
 
-Phase 4's one-liners are these functions.
+Phase 4's one-liners are these steps.
 
 1. Read files
 2. Split text on a char budget

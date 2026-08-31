@@ -1,6 +1,6 @@
 # Status
 
-Last grounded: 2026-08-27
+Last grounded: 2026-09-01
 
 Read order for a new session: `AGENTS.md` → this file → `docs/MAINTENANCE.md` → first unchecked box below.
 Before writing any batch: re-fetch that batch's URLs from `docs/MAINTENANCE.md`. Do not skip the fetch list.
@@ -41,26 +41,24 @@ No learner Python files yet. That is intentional.
 - [x] **`agents/llamaindex/pyproject.toml`** — `course-llamaindex`. `litellm`, `python-dotenv`, `llama-index-core`, `llama-index-llms-litellm`, `llama-index-embeddings-huggingface`, `llama-index-vector-stores-chroma`, `chromadb`, `sentence-transformers`. Reranker (`SentenceTransformerRerank`) ships in core — no extra package. Exact pins live in the committed `uv.lock`.
 - [x] **`data/` sample docs** — `agent-loop.txt` (real answer source), `rag.txt` (real), `decoy-tools.txt` (keyword bait that rerank should demote), `overlap-demo.txt` (Nightjar memo for the chunk-overlap failure). Sized under MiniLM's ~256-token truncation.
 
-## Next (Batch 3 — Phases 7 + 7b)
+## Done (Batch 3 — Phases 7 + 7b)
 
-Fetch the Batch 3 URL list from `docs/MAINTENANCE.md` before writing. Then:
+- [x] **`docs/08-phase-7-langgraph.md`** — abstraction → short decompose. Growing file: graph + `MessagesState` → agent node (`litellm.completion`) + `ToolNode` + `tools_condition` → LlamaIndex retriever as `@tool` → `SqliteSaver` + `thread_id` (kill, resume, contrast `InMemorySaver`) → `interrupt()` + `Command(resume=...)`. Hand-rolled dispatcher is read-only (`tools_condition` = Phase 2's `if tool_calls`). Streaming = sidebar. Never `create_react_agent`. File: `agents/langgraph/07_graph.py`
+- [x] **`docs/09-phase-7b-multi-agent.md`** — abstraction. Supervisor graph; `research` + `writer` as `@tool`s; one task needing both. Handoff (`Command.goto`; LlamaIndex `AgentWorkflow(can_handoff_to=...)`) is contrast, not a build. File: `agents/langgraph/07b_multi_agent.py`
+- [x] **`agents/langgraph/pyproject.toml`** — `course-langgraph` plus `langgraph-checkpoint-sqlite`, LlamaIndex wrap deps, `chromadb`. Exact pins in the committed `uv.lock`.
 
-- [ ] **`docs/08-phase-7-langgraph.md`** — abstraction → short decompose. Growing file, one name per segment: graph + `MessagesState` + reducers → agent node + `ToolNode` + `tools_condition` → LlamaIndex retriever as `@tool` (decorator box right before `@tool`) → `SqliteSaver` + `thread_id` (kill, resume, contrast `InMemorySaver`) → `interrupt()` + `Command(resume=...)` — never `input()`, node restarts from top on resume, side effects must be idempotent, no bare `try/except` around `interrupt`. Short hand-rolled dispatcher mapping back to Phases 2–3. Streaming = sidebar only. Never `create_react_agent` (deprecated). One mermaid: START → agent → tools? → ToolNode → agent → END. Skeleton + Spine line in same pass. File: `agents/langgraph/07_graph.py`
-- [ ] **`docs/09-phase-7b-multi-agent.md`** — abstraction. Supervisor first: two specialists (`research` = RAG tool from 6/7, `writer` = no tools, markdown out) invoked as `@tool`s by a supervisor; one task needing both. One deepening: handoff as contrast (`Command.goto`; LlamaIndex `AgentWorkflow(can_handoff_to=...)` is a pointer, not a build). Not router / Skills / A2A / Deep Agents. Milestone guide: draft its `## Try this` in the plan before writing. One mermaid: user → supervisor → specialists → supervisor → user. File: `agents/langgraph/07b_multi_agent.py`
-- [ ] **`agents/langgraph/pyproject.toml`** — exists as `course-langgraph` (`litellm`, `python-dotenv`, `langgraph`, `langchain`) with a committed `uv.lock`. Extend via `uv add` at write time: Sqlite checkpointer extra + LlamaIndex wrap deps confirmed against installed pins; commit the updated lock.
+## Next (Batch 4 — Phases 8–9 + advanced-topics appendix)
 
-Then update this file and stop.
-
-## Later
-
-### Batch 4 — Phases 8–9 + advanced-topics appendix
-
-Fetch the Batch 4 URL list first.
+Fetch the Batch 4 URL list from `docs/MAINTENANCE.md` before writing. Then:
 
 - [ ] **`docs/10-phase-8-smolagents.md`** — optional, half day. `CodeAgent` vs `ToolCallingAgent` on the same task; code-as-action is a different bet, not a framework to master. Sandbox note only. File: `agents/smolagents/08_code_vs_tools.py`
 - [ ] **`docs/11-phase-9-modern-conventions.md`** — delta + **translation map** (approved expansion; no second implementation anywhere). Part A: Responses API loop beside the Chat Completions loop they built; structured output vs tools; stale-import map ("if you see `create_react_agent` / one-tool `AgentWorkflow` / Chat-Completions-only tutorials, here's what replaced them"). Part B — each row gets what-it-is, when-you'd-switch, ≤5-line snippet: Phase 2 loop → LangGraph `create_agent` harness (LlamaIndex `FunctionAgent` = pointer back to Phase 0); Phase 3 dict → LlamaIndex ChatEngine/memory as *pointer* + LangGraph `MessagesState`/Store; Phases 4–6 engine-as-tool → already the hybrid pattern; `max_steps` → `recursion_limit`; LlamaIndex Workflows / subgraphs → pointers only. File: `agents/langgraph/09_conventions.py`
 - [ ] **`docs/appendix-advanced-topics.md`** — short pointers + official URLs, nothing more: MCP, LangSmith, evals/guardrails, A2A, Deep Agents, LlamaIndex Workflows. Never grows into new phases without an explicit request.
 - [ ] **`agents/smolagents/pyproject.toml`** — only if Phase 8 is written (folder via `uv init`, `[project] name` = `course-smolagents`, deferred until then).
+
+Then update this file and stop.
+
+## Later
 
 ### Optional fluency tours — write only when explicitly asked
 
@@ -71,7 +69,7 @@ Same rule as smolagents (Phase 8): no folder, no doc, no code until requested. P
 
 ## Open notes
 
-- Chat Completions via `litellm.completion` for Phases 2–7. Responses API is Phase 9.
+- Chat Completions via `litellm.completion` for Phases 2–7 (Phase 7 agent node included). Responses API is Phase 9.
 - Phase 0 uses `FunctionAgent` + `LiteLLM`, not `AgentWorkflow`, not Ollama.
 - uv projects per folder: `[project] name` is `course-<folder>` (never the PyPI package name). Direct deps in each `agents/*` `pyproject.toml`, exact pins in the committed `uv.lock`. `uv sync` heals a venv to those pins; `uv add` extends manifest + lock + venv together. The root `pyproject.toml` exists only so PyCharm shows the repo root (no dependencies) — never `uv add` / `uv sync` at the repo root.
 - Every phase doc gets exactly one mermaid (mental map, not decoration), per the locked template. If it maps the snippet they just ran, it sits after Expected / What just moved.

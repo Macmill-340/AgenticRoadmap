@@ -7,4 +7,10 @@ dependencies = [
     "python-dotenv",
     "langgraph",
     "langchain",
+    "langgraph-checkpoint-sqlite",
+    "llama-index-core",
+    "llama-index-llms-litellm",
+    "llama-index-embeddings-huggingface",
+    "llama-index-vector-stores-chroma",
+    "chromadb",
 ]

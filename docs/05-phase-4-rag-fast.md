@@ -166,10 +166,13 @@ client = chromadb.PersistentClient(path=str(CHROMA_PATH))
 collection = client.get_or_create_collection("course_docs")
 vector_store = ChromaVectorStore(chroma_collection=collection)
 
-index = VectorStoreIndex.from_documents(
-    docs,
-    storage_context=StorageContext.from_defaults(vector_store=vector_store),
-)
+if collection.count() == 0:
+    index = VectorStoreIndex.from_documents(
+        docs,
+        storage_context=StorageContext.from_defaults(vector_store=vector_store),
+    )
+else:
+    index = VectorStoreIndex.from_vector_store(vector_store)
 
 query_engine = index.as_query_engine(similarity_top_k=5)
 resp = query_engine.query("What is a tool-calling loop?")
@@ -195,25 +198,17 @@ n.text                       → the chunk
 2. Vectors landed in Chroma on disk.
 3. The query was embedded the same way; nearest chunks were stuffed into Gemini.
 
-Keep `CHROMA_PATH`, `client`, `collection`, `vector_store`, `index`. Next: reload without embedding again.
+Keep `CHROMA_PATH`, `client`, `collection`, `vector_store`, `index`. First run embeds (count was 0). Next: prove the second run does not.
 
 ## Segment 4 — Reload without re-embedding
 
-Replace the `from_documents` block with a build-or-reload so the same file works on the second run:
+Keep the `if collection.count() == 0` block. Kill the script and run the same file again. Add one query that should skip the embed progress bar:
 
 ```python
-if collection.count() == 0:
-    index = VectorStoreIndex.from_documents(
-        docs,
-        storage_context=StorageContext.from_defaults(vector_store=vector_store),
-    )
-else:
-    index = VectorStoreIndex.from_vector_store(vector_store)
-
 print(index.as_query_engine().query("What are the stages of RAG?"))
 ```
 
-**Expected:** first run still embeds (count was 0). Kill the script and run again — RAG-stages answer, near-instant, no embedding progress bar. Persistence was the point of `PersistentClient`. (One client per path at a time — Chroma warns if two fight over the folder.)
+**Expected:** RAG-stages answer, near-instant, no embedding progress bar. Persistence was the point of `PersistentClient`. (One client per path at a time — Chroma warns if two fight over the folder.)
 
 **What just moved:** `from_vector_store` reuses the vectors you already wrote. You did not re-index.
 

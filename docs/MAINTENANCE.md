@@ -1,6 +1,6 @@
 # Maintenance — research before you write
 
-Last grounded: 2026-08-27
+Last grounded: 2026-09-01
 
 A new session writing any later phase **must re-fetch official docs**. Do not treat this file, prior chat, or `agentic-frameworks-teaching-roadmap.md` (local only — not in the repo) as API truth.
 
@@ -84,7 +84,7 @@ A new session writing any later phase **must re-fetch official docs**. Do not tr
 - https://docs.langchain.com/oss/python/langchain/structured-output
 - Advanced-topics appendix only (fetch these only if writing it): LlamaIndex MCP, LangGraph MCP, LangSmith observability, Ollama OpenAI compat
 
-## Known API drift (as of 2026-08-21)
+## Known API drift (as of 2026-09-01)
 
 | Item | Current | Stale |
 |---|---|---|
@@ -98,3 +98,6 @@ A new session writing any later phase **must re-fetch official docs**. Do not tr
 | LiteLLM | Python SDK only (`litellm`) | `litellm[proxy]` |
 | LlamaIndex defaults | `Settings.llm` / `Settings.embed_model` must be set | relying on defaults |
 | HITL | `interrupt()` + `Command(resume=...)` | `input()` inside a node |
+| ToolNode routing | `from langgraph.prebuilt import ToolNode, tools_condition`; the node **must** be named `"tools"` | other node names; `create_react_agent` |
+| LangGraph messages (current pin: `langchain` 0.3.x) | `from langchain_core.messages import AIMessage, convert_to_openai_messages` | `from langchain.messages import ...` (langchain v1 / Phase 9) |
+| Sqlite checkpointer | extra `langgraph-checkpoint-sqlite`; `sqlite3.connect(..., check_same_thread=False)` then `SqliteSaver(conn)` | `SqliteSaver.from_conn_string` as a long-lived graph — it is a context manager and closes the connection |

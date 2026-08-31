@@ -18,6 +18,8 @@ Read AGENTS.md, docs/STATUS.md, docs/MAINTENANCE.md.
 Do the next item in STATUS.md.
 Re-fetch that batch's official URLs before writing.
 Do not skip the fetch list.
+Follow Growing file: one .py, keep/replace, field map not print(resp), What just moved, one new name per segment.
+Run python scripts/check_guides.py before marking a guide done.
 ```
 
 When this session locks a new convention, write it into `AGENTS.md` (and `docs/MAINTENANCE.md` if it is a write-time rule) **in the same pass**. A new session must not need prior chat.
@@ -91,7 +93,7 @@ Optional creativity prompts at the end of milestone guides — **not** exercises
 
 ## Tool-calling API
 
-- **Phases 2–7:** OpenAI **Chat Completions** shape via `litellm.completion` (`tool_calls`, `role: "tool"`).
+- **Phases 2–7:** OpenAI **Chat Completions** shape via `litellm.completion` (`tool_calls`, `role: "tool"`). Phase 7's agent node keeps `completion()` — convert LangGraph messages with `convert_to_openai_messages` / `convert_to_openai_tool` from `langchain_core`. Do not switch the agent node to `init_chat_model` / `bind_tools` until Phase 9.
 - **Default model:** `gemini/gemini-3.5-flash-lite` + `GEMINI_API_KEY`. Pass `api_key=os.getenv("GEMINI_API_KEY")` into every `LiteLLM` / `completion` call. Swap later by changing the model string (`openai/gpt-4o-mini`, `ollama/qwen3`).
 - **`.env`:** `LITELLM_LOG=ERROR` (quiets LiteLLM's Gemini 3 sampling notice). Call `load_dotenv()` **before** importing LiteLLM — it reads `LITELLM_LOG` at import time.
 - **`FunctionAgent.run`:** `await agent.run(user_msg="...")` — never positional. An IDE underline on that form is a stale type-overload; official docs use `user_msg=`; it runs.
