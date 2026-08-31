@@ -1,6 +1,6 @@
 # Setup
 
-Last grounded: 2026-08-21  
+Last grounded: 2026-08-31  
 Prereq files: `AGENTS.md`  
 Fetch before writing later phases: uv + LiteLLM + Gemini URLs in `docs/MAINTENANCE.md`  
 Suggested file: `agents/foundation/pyproject.toml` (already exists; see section 3)  
@@ -18,7 +18,7 @@ Chat goes through **LiteLLM → Gemini** (reliable tool-calling, no multi-GB loc
 
 ## How to read a phase doc
 
-Each phase file is a self-contained guide. Implement **one segment**, run it, match expected output, then the next segment.
+Each phase file is a self-contained guide. Implement **one segment** in the same `.py` the guide named: keep what it says to keep, add or replace the rest, run, match expected output, then the next segment. Print the field path the guide names (`resp.choices[0].message.content`), not the whole object.
 
 A new coding session: read `AGENTS.md` → `docs/STATUS.md` → `docs/MAINTENANCE.md` → the next phase doc.
 

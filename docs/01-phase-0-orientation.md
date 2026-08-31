@@ -83,7 +83,7 @@ asyncio.run(main())
 
 That's all you need here. Phase 5 covers running several waits at once.
 
-A **tool** is a normal Python function you hand to the agent. The model never sees your source code. It sees three things: the function **name**, the **argument types**, and the **docstring** — the `"""..."""` line under `def`. That text is how Gemini decides *when* to call it. Write it like a label on a toolbox, not a note to yourself.
+A **tool** is a normal Python function you hand to the agent. The model never sees your source code. It sees three things: the function **name**, the **argument types**, and the **docstring** — the `"""..."""` line under `def`. That text is a short label so Gemini knows this tool multiplies.
 
 ```python
 import asyncio

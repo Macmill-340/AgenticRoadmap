@@ -52,6 +52,18 @@ Original handoff (do not treat as current API truth): `agentic-frameworks-teachi
 - Phase 7b (multi-agent) comes **after** a working single-agent graph, not earlier.
 - MCP, LangSmith, evals, A2A, Deep Agents stay out of the course until you explicitly ask for them — and then as a short pointers-only appendix, not new phases.
 
+### Growing file (every build guide)
+
+One `.py` grows. Each segment says keep X, add Y, replace Z. "Your finished file" matches the last segment — no name that appears then vanishes (`FUNCTIONS`, a second dispatch, a throwaway import). If a snippet is read-only, say "read, do not paste."
+
+- **Print the path, not the object.** After the first API object in a guide, a 3–6 line field map of what they will *use*. Do not `print(resp)` / `print(msg)`.
+- **What just moved** after every runnable snippet (numbered; maps back to the loop/pipeline they already know). Concept-only Phase 1 is exempt.
+- **One new name (or one stage) per segment.** Deepening is one extra idea at the end, not five helpers on day one. Phase 7: graph → tools → checkpointer → interrupt — not all four in the first snippet.
+- **Process print** on the first Python tool in that file (`your process ran add(...)`).
+- **Tool `description` / docstring** in plain English: a short label so the model knows when to use the tool. Never "write *when*, not a lecture…".
+- **Copy across venvs** shows the pasted block in full (no "name it `ADD_TOOL`" without the JSON).
+- **Mermaid:** snippet-flow → after Expected / What just moved. Mental map for abstraction-first (4, 6, 7) may stay in The big picture. Still one mermaid.
+
 ## Writing style (every guide)
 
 Write for one reader: a smart beginner building along in a terminal.
@@ -61,7 +73,7 @@ Write for one reader: a smart beginner building along in a terminal.
 - Banned words: packet, cold-start, parking lot, shim, load-bearing, leverage, robust, seamless, delve. "Guide" is the standing noun for a phase doc.
 - Every code block is followed by what you should see when you run it.
 - One mermaid per phase. No extra diagram after snippets. Explain after the code (`What just moved`), not with comments in the snippet. If the mermaid is the flow of the snippet they just ran, put it after Expected / What just moved — not as a slide before they type.
-- Tool **docstrings** (and JSON `description` later) are required: the model reads name, types, and that text to decide *when* to call. Explain that in the guide before the tool snippet. Do not use `#` comments in the `.py` to teach.
+- Tool **docstrings** (and JSON `description` later) are required: the model reads name, types, and that text to decide when to call. A short label is enough. Explain that in the guide before the tool snippet. Do not use `#` comments in the `.py` to teach.
 - Checkpoints only quiz what **that guide** taught. Do not quiz "Don't add yet" names or later phases.
 - First-tool demo: print inside the Python function so the learner can see the process ran (e.g. `your process ran multiply({a}, {b})` — not "the model called it").
 - `os.getenv("GEMINI_MODEL", "gemini/gemini-3.5-flash-lite")` — the default keeps the type `str`.

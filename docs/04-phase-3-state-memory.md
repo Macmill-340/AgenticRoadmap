@@ -1,6 +1,6 @@
 # Phase 3 — State and memory by hand
 
-Last grounded: 2026-08-27  
+Last grounded: 2026-08-31  
 Prereq files: `docs/00-setup.md`, `docs/02-phase-1-decoding.md`, `docs/03-phase-2-tool-loop.md`  
 Fetch before writing:  
 - https://docs.litellm.ai/docs/completion/token_usage  
@@ -37,21 +37,21 @@ Mode: **raw**. Direct extension of Phase 2. No Memory class, no framework.
 
 ## What you'll build
 
-Make Phase 2's throwaway `messages` list into explicit **state**: conversation history plus a small facts dict, rendered into the system prompt on every turn — and kept under an artificial token budget with two strategies: **cap** (drop oldest) vs **summarize** (compress oldest).
+Take Phase 2's `run_agent` and pass it a messages list you keep — so two calls share one conversation. Then add a small `facts` dict rendered into the system prompt. One deepening: **cap** (drop oldest) vs **summarize** (compress oldest).
 
 ## Why it matters
 
-Phase 2's `run_agent` built `messages` inside the function. When it returned, everything the agent knew died. Real agents carry context across turns, and every framework memory feature (`ChatMemoryBuffer`, LangGraph checkpoints, whatever ships next year) reduces to the same thing: **data you hold yourself, rendered into the prompt**. Build it once by hand so those abstractions are legible later.
+Phase 2's `run_agent` built `messages` inside the function. When it returned, everything the agent knew died. Real agents carry context across turns. Every later "memory" feature is the same idea: **data you hold yourself, rendered into the prompt**.
 
-One thing to plant for later: LangGraph's `MessagesState` stores a message list whose reducer decides overwrite-vs-append on updates — exactly the choice you make by hand here when you decide whether new turns replace or extend `state["messages"]`. Phase 7 makes that explicit.
+One thing to plant for later: LangGraph's `MessagesState` stores a message list whose reducer decides overwrite-vs-append — the choice you make here when new turns extend `state["messages"]` instead of replacing it. Phase 7 makes that explicit.
 
 ## Skeleton
 
 Memory = **a dict you render into the prompt**.
 
-1. Hold `state = {messages, facts}`
-2. Render facts into the system string
-3. Call the Phase 2 loop on that state
+1. Hold a messages list outside `run_agent`
+2. Add `facts` and render them into the system string
+3. Call the Phase 2 loop on that dict
 4. If over budget: cap or summarize
 
 ## Official docs
@@ -62,7 +62,7 @@ Memory = **a dict you render into the prompt**.
 
 ## The big picture
 
-State = `{"messages": [...], "facts": {...}}`. History gives the model continuity of conversation; facts give it durability that survives trimming. The system prompt is a **rendering** of that state, rebuilt every call. Nothing else.
+Start with the Phase 2 list, living outside the function. Then state = `{"messages": [...], "facts": {...}}`. History gives continuity; facts survive trimming. The system prompt is rebuilt every call from that dict.
 
 ```mermaid
 flowchart TD
@@ -121,16 +121,103 @@ uv run python 03_state.py
 
 **Expected:** the second answer contains `Ada`. Now delete the first three `append`/`completion` lines (keep only the final question) and rerun — the model has no idea. Nothing magical stored anything; **the list was the memory**, and you deleted it.
 
+Keep `MODEL`, `API_KEY`, and the imports. Segment 2 replaces the two-turn script with Phase 2's loop, and the list lives outside it.
+
 ---
 
-## Segment 2 — A TypedDict state + facts rendered into the system prompt
+## Segment 2 — Same loop, list lives outside
 
-History alone is fragile (Segment 4 proves it). Add a second channel: facts the agent chooses to keep.
+This is the whole feature. Copy `add`, `AddArgs`, `run_add`, and the add JSON as `ADD_TOOL` from your `02_tool_loop.py`. Change `run_agent` so it takes the list you keep:
+
+```python
+from pydantic import BaseModel, ValidationError
+
+MAX_STEPS = 8
+
+
+def add(a: float, b: float) -> float:
+    print(f"your process ran add({a}, {b})")
+    return a + b
+
+
+class AddArgs(BaseModel):
+    a: float
+    b: float
+
+
+def run_add(raw_json: str) -> str:
+    try:
+        args = AddArgs.model_validate_json(raw_json)
+    except ValidationError as exc:
+        return f"Invalid arguments: {exc}"
+    return str(add(args.a, args.b))
+
+
+ADD_TOOL = {
+    "type": "function",
+    "function": {
+        "name": "add",
+        "description": "Add two numbers and return the sum.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "a": {"type": "number", "description": "First addend"},
+                "b": {"type": "number", "description": "Second addend"},
+            },
+            "required": ["a", "b"],
+        },
+    },
+}
+
+TOOLS = [ADD_TOOL]
+
+
+def run_agent(messages: list, user_text: str) -> str:
+    messages.append({"role": "user", "content": user_text})
+    for _step in range(MAX_STEPS):
+        resp = completion(
+            model=MODEL,
+            api_key=API_KEY,
+            messages=messages,
+            tools=TOOLS,
+        )
+        msg = resp.choices[0].message
+        messages.append(msg)
+        if not msg.tool_calls:
+            return msg.content or ""
+        for call in msg.tool_calls:
+            if call.function.name == "add":
+                content = run_add(call.function.arguments)
+            else:
+                content = f"Unknown tool: {call.function.name}"
+            messages.append(
+                {"role": "tool", "tool_call_id": call.id, "content": content}
+            )
+    raise RuntimeError(f"Agent exceeded max_steps={MAX_STEPS}")
+
+
+messages = [
+    {"role": "system", "content": "You are a concise assistant. Use add for arithmetic."},
+]
+print(run_agent(messages, "My name is Ada."))
+print(run_agent(messages, "What is my name?"))
+print(run_agent(messages, "What is 41 + 1?"))
+```
+
+**Expected:** Ada on the second line (from the list, not a Memory object); `your process ran add(...)` then `42` on the third. `run_agent` is called three times and `messages` is the same object — that is the entire feature.
+
+**What just moved:** Phase 2 built `messages` inside the function and threw it away. Now you pass the list in. Two calls share one conversation.
+
+---
+
+## Segment 3 — Facts that survive when history is trimmed
+
+History alone is fragile (Segment 4 proves it). Add a second channel: facts the agent writes with a `remember` tool, rendered into the system prompt every call.
+
+Replace the bare `messages` list with a dict. Keep `ADD_TOOL` / `add` / `run_add`. Add `remember` beside `add`:
 
 ```python
 from typing import TypedDict
-
-from pydantic import BaseModel, ValidationError
 
 
 class AgentState(TypedDict):
@@ -147,7 +234,7 @@ REMEMBER_TOOL = {
     "type": "function",
     "function": {
         "name": "remember",
-        "description": "Store a fact that should survive the whole session.",
+        "description": "Store a fact that should survive the whole session. Call only when the user says remember, keep, or store.",
         "parameters": {
             "type": "object",
             "properties": {
@@ -159,9 +246,11 @@ REMEMBER_TOOL = {
     },
 }
 
+TOOLS = [ADD_TOOL, REMEMBER_TOOL]
+
 
 def render_system(state: AgentState) -> str:
-    base = "You are a concise assistant. Call remember only when the user explicitly says remember, keep, or store a fact."
+    base = "You are a concise assistant. Call remember only when the user explicitly says remember, keep, or store a fact. Use add for arithmetic."
     if state["facts"]:
         lines = "\n".join(f"- {k}: {v}" for k, v in sorted(state["facts"].items()))
         base += f"\n\nKnown facts:\n{lines}"
@@ -172,9 +261,9 @@ def build_messages(state: AgentState) -> list:
     return [{"role": "system", "content": render_system(state)}] + state["messages"]
 ```
 
-**Point:** the prompt is a pure function of state. Change `facts`, and the very next `completion()` sees different instructions. No object updated behind your back.
+`render_system` turns `facts` into text. `build_messages` puts that text on the front of the history. Change `facts`, and the next `completion()` sees different instructions.
 
-**Expected (quick check):**
+Quick check (no model call):
 
 ```python
 state: AgentState = {"messages": [], "facts": {}}
@@ -183,19 +272,11 @@ for m in build_messages(state):
     print(m)
 ```
 
-The system message now contains `Known facts:\n- user_name: Ada`.
+The system message contains `Known facts:` and `user_name: Ada`.
 
----
-
-## Segment 3 — Same loop as Phase 2, now operating on state
-
-Copy `add`, `AddArgs`, its tool schema (name it `ADD_TOOL`), and `run_add` from your `02_tool_loop.py`. Two changes: tools gain `remember`, and `run_agent` takes and mutates `state` instead of building `messages` locally.
+Now point Segment 2's loop at `state`. Two changes: `messages=build_messages(state)`, and a `remember` branch:
 
 ```python
-TOOLS = [ADD_TOOL, REMEMBER_TOOL]
-MAX_STEPS = 8
-
-
 def run_agent(state: AgentState, user_text: str) -> str:
     state["messages"].append({"role": "user", "content": user_text})
     for _step in range(MAX_STEPS):
@@ -228,35 +309,31 @@ def run_agent(state: AgentState, user_text: str) -> str:
 
 
 state: AgentState = {"messages": [], "facts": {}}
-
 print(run_agent(state, "My name is Ada. Please remember it."))
 print(run_agent(state, "What is my name?"))
 print(run_agent(state, "What is 41 + 1?"))
 print(state["facts"])
 ```
 
-(`ValidationError` comes from `pydantic`, as in Phase 2.)
+**Expected:** the second answer contains `Ada` *via the fact*, not just via history; the third prints `42`; `state["facts"]` shows the stored entry.
 
-**Expected:** the second answer contains `Ada` *via the fact*, not just via history; the third prints `42`; the facts dict shows the stored entry. Note `run_agent` is called twice and state persists **between** calls — that is the entire feature.
+**What just moved:** `remember` writes `facts`. `build_messages` reads `facts` on the next call — including the next loop iteration of the same turn.
 
 **Common failures**
 
 | Symptom | Fix |
 |---|---|
-| Name answered but `facts` empty | Model answered from history. Tighten `render_system`: "Call remember immediately when the user shares a personal fact." |
+| Name answered but `facts` empty | Model answered from history. The user line must say remember/keep/store, or tighten `render_system`. |
 | `OPENAI_API_KEY` error | You drifted onto defaults — `model=MODEL` and `GEMINI_API_KEY` only. |
 | Tool loop runs away | Same guard as Phase 2: `max_steps` raises; don't soften it. |
-| 429 / rate limit | Free Gemini is ~15 requests/minute. Wait a minute, then rerun. Run `demo(enforce_cap)` and `demo(enforce_summarize)` as two separate passes if needed. |
-| Cap demo still knows Ada | The model called `remember` without being asked. Tighten `render_system` so remember fires only on an explicit ask. |
-| Missing corresponding tool call | Cap/summarize left a `role: tool` message without its parent. Sweep leading tool messages after the trim, same as `enforce_cap`. |
 
 ---
 
 ## Segment 4 — Deepening: token budget, cap vs summarize
 
-Gemini's context window is enormous — you will never overflow it in a demo. So the budget is **artificial on purpose**: `TOKEN_BUDGET = 150` tokens stands in for any hard constraint (a smaller local model, cost caps, latency). The mechanics are identical at real scale. Keep the padding loop short — free Gemini allows about 15 requests per minute.
+Gemini's context window is enormous — you will never overflow it in a demo. So the budget is **artificial on purpose**: `TOKEN_BUDGET = 150` tokens stands in for any hard constraint (a smaller local model, cost caps, latency). Keep the padding loop short — free Gemini allows about 15 requests per minute.
 
-LiteLLM counts for you — no extra dependency:
+Two helpers, then two strategies. `over_budget` asks LiteLLM how many tokens the next prompt would be. `role_of` reads `role` whether the turn is a dict you appended or a LiteLLM message object.
 
 ```python
 from litellm import completion, token_counter
@@ -266,6 +343,10 @@ TOKEN_BUDGET = 150
 
 def over_budget(state: AgentState) -> bool:
     return token_counter(model=MODEL, messages=build_messages(state)) > TOKEN_BUDGET
+
+
+def role_of(m) -> str:
+    return m["role"] if isinstance(m, dict) else m.role
 ```
 
 (`resp.usage.prompt_tokens` after a call is the other reading; `token_counter` works before one.)
@@ -273,10 +354,6 @@ def over_budget(state: AgentState) -> bool:
 ### Strategy A — cap (drop oldest)
 
 ```python
-def role_of(m) -> str:
-    return m["role"] if isinstance(m, dict) else m.role
-
-
 def enforce_cap(state: AgentState) -> None:
     while state["messages"] and over_budget(state):
         state["messages"].pop(0)
@@ -284,7 +361,7 @@ def enforce_cap(state: AgentState) -> None:
             state["messages"].pop(0)
 ```
 
-Dropping an assistant message that carried `tool_calls` leaves its `role: "tool"` replies parentless — most providers reject that, so sweep them too. `role_of` handles both dicts you appended and LiteLLM message objects.
+Dropping an assistant message that carried `tool_calls` leaves its `role: "tool"` replies parentless — most providers reject that, so sweep them too.
 
 ### Strategy B — summarize (compress oldest into facts)
 
@@ -355,6 +432,12 @@ demo(enforce_summarize)
 
 Print `len(state["messages"])` before/after trimming so the mechanism is visible, not asserted.
 
+| Symptom | Fix |
+|---|---|
+| 429 / rate limit | Free Gemini is ~15 requests/minute. Wait a minute, then rerun. Run `demo(enforce_cap)` and `demo(enforce_summarize)` as two separate passes if needed. |
+| Cap demo still knows Ada | The model called `remember` without being asked. Tighten `render_system` so remember fires only on an explicit ask. |
+| Missing corresponding tool call | Cap/summarize left a `role: tool` message without its parent. Sweep leading tool messages after the trim, same as `enforce_cap`. |
+
 ---
 
 ## Worth knowing
@@ -376,14 +459,17 @@ Print `len(state["messages"])` before/after trimming so the mechanism is visible
 
 `agents/foundation/03_state.py` — `MODEL`, `TOKEN_BUDGET`, `AgentState`, `RememberArgs`/`AddArgs`, `TOOLS` (add + remember), `render_system`, `build_messages`, `over_budget`, `role_of`, `enforce_cap`, `enforce_summarize`, `run_agent` (with `enforce=`), `demo`, `__main__`. Roughly 90–120 lines.
 
+Segment 2's `run_agent(messages, ...)` is replaced by Segment 3's `run_agent(state, ...)`. Keep one.
+
 ## Checkpoint
 
 1. In Segment 1, what exactly "remembered" Ada — and where did it go when you deleted it?
-2. Why does the summarized name survive `enforce_summarize` but not `enforce_cap`?
-3. If the model calls `remember` mid-loop, when does the new fact reach the model?
-4. `TOKEN_BUDGET = 150` is fake. In production, where do the two real numbers come from?
+2. In Segment 2, why does the second `run_agent` call know Ada?
+3. Why does the summarized name survive `enforce_summarize` but not `enforce_cap`?
+4. If the model calls `remember` mid-loop, when does the new fact reach the model?
+5. `TOKEN_BUDGET = 150` is fake. In production, where do the two real numbers come from?
 
-Answers: (1) the `messages` list — it was the only carrier; deleting it deleted the memory. (2) summarize moves old content into `facts`, which is rendered into the system prompt and never trimmed; cap deletes outright. (3) on the *next* `build_messages()` — i.e., the next `completion()` call, possibly the same turn's next loop iteration. (4) the model's context window (provider spec / `litellm.model_cost`) and your own cost/latency ceiling; measured against `usage.prompt_tokens` or `token_counter`.
+Answers: (1) the `messages` list — it was the only carrier; deleting it deleted the memory. (2) you passed the same list in; Phase 2 used to throw it away. (3) summarize moves old content into `facts`, which is rendered into the system prompt and never trimmed; cap deletes outright. (4) on the *next* `build_messages()` — i.e., the next `completion()` call, possibly the same turn's next loop iteration. (5) the model's context window (provider spec / `litellm.model_cost`) and your own cost/latency ceiling; measured against `usage.prompt_tokens` or `token_counter`.
 
 ---
 

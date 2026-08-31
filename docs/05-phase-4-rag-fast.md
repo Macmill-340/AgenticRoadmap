@@ -1,6 +1,6 @@
 # Phase 4 — RAG fast (LlamaIndex)
 
-Last grounded: 2026-08-27  
+Last grounded: 2026-08-31  
 Prereq files: `docs/03-phase-2-tool-loop.md`, `docs/04-phase-3-state-memory.md`  
 Fetch before writing:  
 - https://docs.llamaindex.ai/en/stable/module_guides/supporting_modules/settings/  
@@ -134,9 +134,11 @@ Settings.embed_model = HuggingFaceEmbedding(
 )
 ```
 
-**Expected:** imports succeed; nothing printed yet. To feel the trap once, comment the two `Settings.` lines out, run Segment 3, and read the auth error — then put them back.
+**Expected:** imports succeed; nothing printed yet. To feel the trap once, delete the two `Settings.` lines, run Segment 3, and read the auth error — then put them back.
 
 Note: MiniLM truncates inputs around **256 tokens**. Sample docs below are sized for it.
+
+Keep these imports and `Settings` lines. The next segments add load, then persist, then query.
 
 ## Segment 2 — Load
 
@@ -152,6 +154,8 @@ for d in docs:
 `Path(__file__)...parents[2]` lands on the repo root regardless of where you launch `uv run` from (Windows-friendly; no cwd dependence).
 
 **Expected:** four documents (`agent-loop.txt`, `decoy-tools.txt`, `rag.txt`, `overlap-demo.txt`). The Nightjar memo is for Phase 5; it can sit unused today. If zero, the path is wrong — print `DATA_DIR`.
+
+Keep `DATA_DIR` and `docs`. Next: persist those documents.
 
 ## Segment 3 — Persist to Chroma and query
 
@@ -177,19 +181,41 @@ for n in resp.source_nodes:
 
 **Expected:** a correct sentence defining the loop, sourced mostly from `agent-loop.txt`. The score list shows what naive cosine ranked where — the decoy may or may not appear; remember the order for Segment 5. On disk now: `agents/llamaindex/chroma_db/` (gitignored).
 
+Do not dump `resp` beyond `print(resp)` — that already is the answer text. The list you printed is:
+
+```
+n.score                      → cosine similarity (not a probability)
+n.metadata.get("file_name")  → which doc
+n.text                       → the chunk
+```
+
+**What just moved:**
+
+1. Documents were chunked and embedded (MiniLM).
+2. Vectors landed in Chroma on disk.
+3. The query was embedded the same way; nearest chunks were stuffed into Gemini.
+
+Keep `CHROMA_PATH`, `client`, `collection`, `vector_store`, `index`. Next: reload without embedding again.
+
 ## Segment 4 — Reload without re-embedding
 
-Kill the script. Run again, skipping `from_documents` entirely:
+Replace the `from_documents` block with a build-or-reload so the same file works on the second run:
 
 ```python
-client = chromadb.PersistentClient(path=str(CHROMA_PATH))
-collection = client.get_or_create_collection("course_docs")
-index = VectorStoreIndex.from_vector_store(ChromaVectorStore(chroma_collection=collection))
+if collection.count() == 0:
+    index = VectorStoreIndex.from_documents(
+        docs,
+        storage_context=StorageContext.from_defaults(vector_store=vector_store),
+    )
+else:
+    index = VectorStoreIndex.from_vector_store(vector_store)
 
 print(index.as_query_engine().query("What are the stages of RAG?"))
 ```
 
-**Expected:** the RAG-stages answer, near-instant, no embedding progress bar. Persistence was the point of `PersistentClient` over the in-memory default. (One client per path at a time — Chroma warns if two fight over the folder.)
+**Expected:** first run still embeds (count was 0). Kill the script and run again — RAG-stages answer, near-instant, no embedding progress bar. Persistence was the point of `PersistentClient`. (One client per path at a time — Chroma warns if two fight over the folder.)
+
+**What just moved:** `from_vector_store` reuses the vectors you already wrote. You did not re-index.
 
 ## Segment 5 — Deepening: rerank
 
@@ -227,7 +253,9 @@ engine_reranked = index.as_query_engine(
 print(engine_reranked.query(QUERY))
 ```
 
-**Expected:** `agent-loop.txt` holds rank 1 after rerank; `decoy-tools.txt` sinks or vanishes from the kept pair. Exact scores/order vary by run — the lesson is *comparing orderings*, not memorizing numbers. Postprocessors run after retrieval, before response synthesis; that slot is why "one knob" upgrades like this don't touch the rest of the pipeline.
+**Expected:** `agent-loop.txt` holds rank 1 after rerank; `decoy-tools.txt` sinks or vanishes from the kept pair. Exact scores/order vary by run — the lesson is *comparing orderings*, not memorizing numbers.
+
+**What just moved:** retrieval still returned five nodes. The cross-encoder re-read `(query, chunk)` pairs and kept two. The index on disk did not change. Postprocessors run after retrieval, before Gemini writes — that slot is why this upgrade does not touch the rest of the pipeline.
 
 ---
 
@@ -257,7 +285,7 @@ print(engine_reranked.query(QUERY))
 
 ## Your finished file
 
-`agents/llamaindex/04_rag_fast.py` — env + Settings, `DATA_DIR`/`CHROMA_PATH`, load, build-or-reload Chroma index, plain query + score printout, rerank comparison, reranked query engine, `if __name__`. Roughly 70–90 lines.
+`agents/llamaindex/04_rag_fast.py` — env + Settings, `DATA_DIR`/`CHROMA_PATH`, load, build-or-reload (`count() == 0` vs `from_vector_store`), plain query + score printout, rerank comparison, reranked query engine, `if __name__`. Roughly 70–90 lines.
 
 ## Checkpoint
 

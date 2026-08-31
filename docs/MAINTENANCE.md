@@ -16,7 +16,7 @@ A new session writing any later phase **must re-fetch official docs**. Do not tr
 8. Do not promote a deferred topic (MCP, LangSmith, evals, …) into a new phase without an explicit request.
 9. Do not install `litellm[proxy]`.
 10. After the batch: set `Last grounded: YYYY-MM-DD` on every file you wrote, and update `docs/STATUS.md`.
-11. Style pass before done: every guide follows the writing style in `AGENTS.md` — content-bearing headers, no banned words, expected output after every code block.
+11. Style pass before done: every guide follows the writing style in `AGENTS.md` — content-bearing headers, no banned words, expected output after every code block, growing-file keep/replace, field map (not `print(resp)`), What just moved, one new name per segment, process print on the first tool, plain-English tool descriptions.
 12. Never write or commit session dumps / chat exports (`session-ses_*.md`, transcripts). Delete them if they appear — do not add them to `.gitignore` to hide them.
 13. When this session locks a new convention, write it into `AGENTS.md` (and this file if it is a write-time rule) **in the same pass**. A new session must not need prior chat.
 14. Checkpoints only quiz what that guide taught. Explain tool docstrings (the model reads them) before the tool snippet. No `#` comments in learner snippets to teach.

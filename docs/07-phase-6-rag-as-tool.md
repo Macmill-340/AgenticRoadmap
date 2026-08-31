@@ -1,6 +1,6 @@
 # Phase 6 — RAG as a tool (the glue)
 
-Last grounded: 2026-08-27  
+Last grounded: 2026-08-31  
 Prereq files: `docs/03-phase-2-tool-loop.md`, `docs/05-phase-4-rag-fast.md`  
 Fetch before writing:  
 - https://docs.litellm.ai/docs/providers/gemini  
@@ -56,7 +56,7 @@ RAG is a **tool**, not the agent.
 
 | Piece | Origin |
 |---|---|
-| `run_agent(state, text)` loop | Phase 2 (`02_tool_loop.py`) |
+| `run_agent(user_text)` loop | Phase 2 (`02_tool_loop.py`) |
 | `state = {messages, facts}` | Phase 3 (optional here — plain dict works) |
 | query engine + Chroma | Phase 4 (`04_rag_fast.py`) |
 | hand-written schema + dispatch | Phase 2, Segment 2 |
@@ -136,14 +136,17 @@ engine = index.as_query_engine(similarity_top_k=3)
 
 
 def search_notes(query: str) -> str:
+    print(f"your process ran search_notes({query!r})")
     return str(engine.query(query))
 ```
 
 **Expected:** imports clean; nothing runs yet. Empty collection → the `if` rebuilds from `data/` (same as Phase 4). Already filled → reload, no re-embed.
 
+Keep Settings, `engine`, and `search_notes`. Next: its JSON schema, then the Phase 2 loop.
+
 ## Segment 2 — Schema by hand (30 seconds, you've done this)
 
-Same job as Phase 0's docstring: the JSON `description` is what the model reads to decide *when* to retrieve. Write *when*, not a lecture on search engines.
+Same job as Phase 0's docstring: the JSON `description` is a short label so the model knows this tool searches the user's notes, not a paragraph about search engines.
 
 ```python
 SEARCH_TOOL = {
@@ -165,14 +168,17 @@ class SearchArgs(BaseModel):
     query: str
 ```
 
-Read that description out loud. If it does not say *when*, the model will retrieve for everything — or never.
+Read that description out loud. If it does not say the notes are local AI-engineering docs, the model will retrieve for everything — or never.
+
+Keep `SEARCH_TOOL` and `SearchArgs`. Paste the loop below them.
 
 ## Segment 3 — Same loop, one more branch
 
-Copy `add` from Phase 2, then register both tools. The only new lines in the loop are the `search_notes` branch:
+Keep Segments 1–2. Paste `add` from Phase 2 (including its process print), then register both tools. The only new lines in the loop are the `search_notes` branch:
 
 ```python
 def add(a: float, b: float) -> float:
+    print(f"your process ran add({a}, {b})")
     return a + b
 
 
@@ -259,7 +265,17 @@ if __name__ == "__main__":
     print(run_agent(state, "Who wrote Hamlet?"))
 ```
 
-**Expected:** Q1 calls `search_notes` and answers from `data/rag.txt`; Q2 calls `add` → 42; Q3 makes **no** tool call — general knowledge answered directly. Print `state["messages"]` once and find all three shapes.
+**Expected:** Q1 prints `your process ran search_notes(...)` and answers from `data/rag.txt`; Q2 prints `your process ran add(...)` then 42; Q3 makes **no** tool call — general knowledge answered directly.
+
+Do not dump `state["messages"]`. The three shapes are:
+
+```
+search  → assistant tool_calls name=search_notes, then role "tool", then a sentence
+add     → assistant tool_calls name=add, then role "tool", then 42
+neither → assistant content, tool_calls empty
+```
+
+**What just moved:** the Phase 4 engine is one more tool in the Phase 2 loop. The model picks from schemas. You did not hard-code retrieve vs add vs answer.
 
 That's the whole phase. If you feel like adding memory or a second retriever — stop; that is Phase 7 territory.
 

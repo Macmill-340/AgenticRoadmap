@@ -1,6 +1,6 @@
 # Phase 2 — The raw tool-calling loop
 
-Last grounded: 2026-08-27  
+Last grounded: 2026-08-31  
 Prereq files: `docs/00-setup.md`, `docs/01-phase-0-orientation.md`, `docs/02-phase-1-decoding.md`  
 Fetch before writing:  
 - https://docs.litellm.ai/docs/  
@@ -72,21 +72,6 @@ The loop = **messages + schemas → call → run → append → repeat**.
 - Anthropic tool use (contrast only): https://docs.anthropic.com/en/docs/agents-and-tools/tool-use/overview
 - Pydantic models: https://docs.pydantic.dev/latest/concepts/models/
 
-```mermaid
-flowchart TD
-  A[messages + tools schema] --> B["litellm.completion(model=...)"]
-  B --> C{finish_reason / tool_calls?}
-  C -->|no tool_calls| D[print assistant text — done]
-  C -->|tool_calls| E[validate args with Pydantic]
-  E -->|ok| F[run Python function]
-  E -->|ValidationError| G[error string as tool content]
-  F --> H["append role: tool + tool_call_id"]
-  G --> H
-  H --> I{step < max_steps?}
-  I -->|yes| B
-  I -->|no| J[raise — do not return]
-```
-
 ---
 
 ## Segment 1 — Bare chat (no tools)
@@ -116,11 +101,15 @@ uv run python 02_tool_loop.py
 
 **Expected:** a short greeting. 401 → `.env` / `load_dotenv()`.
 
+Keep `MODEL`, `API_KEY`, and the imports. The next segments replace the `completion` + `print` in this same file.
+
 ---
 
 ## Segment 2 — Write the schema by hand first
 
-Do this **on paper or in a comment** before any Pydantic `model_json_schema()`. Chat Completions nests `function`:
+Look at this JSON. You will paste it as `TOOLS` in the next segment. Do not generate it from Pydantic yet.
+
+Chat Completions nests `function`:
 
 ```json
 {
@@ -140,30 +129,13 @@ Do this **on paper or in a comment** before any Pydantic `model_json_schema()`. 
 }
 ```
 
-That shape **is** the tool. The JSON `description` is the same job as the Python **docstring** in Phase 0: the model reads it to decide *when* to call. Write *when*, not a lecture on what addition is.
-
-Optional second tool (stub is fine):
-
-```json
-{
-  "type": "function",
-  "function": {
-    "name": "get_weather",
-    "description": "Get a fake weather string for a city. Use when the user asks about weather.",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "city": {"type": "string", "description": "City name, e.g. Paris"}
-      },
-      "required": ["city"]
-    }
-  }
-}
-```
+That JSON **is** the tool, as far as the model is concerned. It never sees your Python. It sees `name`, argument types, and `description` — the same job as the Phase 0 **docstring**. A short label is enough: this tool adds. You do not need to explain arithmetic.
 
 ---
 
 ## Segment 3 — Send `tools=` and read `tool_calls`
+
+Paste the JSON as `TOOLS`. Replace Segment 1's `completion` + `print` with this:
 
 ```python
 TOOLS = [
@@ -200,18 +172,33 @@ print("content:", msg.content)
 print("tool_calls:", msg.tool_calls)
 ```
 
-**Expected:** `finish_reason` is often `"tool_calls"`. `msg.tool_calls` is a list. Each item has `id`, and `function.name` / `function.arguments` (arguments are a **JSON string**).
+**Expected:** `finish_reason` is often `"tool_calls"`. `content` is `None` (or empty). `tool_calls` is a list. Each item has `id`, and `function.name` / `function.arguments` (arguments are a **JSON string**).
 
 If `tool_calls` is empty: tighten the system prompt, or try `tool_choice="required"`.
 
+Do not `print(resp)` or `print(msg)`. The object is huge (Gemini extras, `thought_signature`, usage). You only need this path:
+
+```
+resp.choices[0].finish_reason              → "tool_calls" or "stop"
+resp.choices[0].message                    → msg
+  msg.content                              → None while it is calling a tool
+  msg.tool_calls[0].function.name          → "add"
+  msg.tool_calls[0].function.arguments     → '{"a": 41, "b": 1}'  (a string)
+  msg.tool_calls[0].id                     → you send this back as tool_call_id
+```
+
+**What just moved:** the model did not add 41 and 1. It proposed a call. Your Python has not run yet.
+
 ---
 
-## Segment 4 — Execute, append, loop
+## Segment 4 — Execute, append, call again
+
+Keep `TOOLS` and `messages`. Under them, add the Python function and feed the result back.
 
 Chat Completions result shape (not Responses):
 
 - Assistant turn carries `tool_calls`.
-- You append that assistant message (or a dict with `role`, `content`, `tool_calls`).
+- You append that assistant message.
 - Each result is a **separate** message: `role: "tool"`, keyed by `tool_call_id`.
 
 ```python
@@ -219,20 +206,22 @@ import json
 
 
 def add(a: float, b: float) -> float:
+    print(f"your process ran add({a}, {b})")
     return a + b
 
 
-FUNCTIONS = {"add": add}
-
 messages.append(msg)
 for call in msg.tool_calls or []:
-    args = json.loads(call.function.arguments)
-    result = FUNCTIONS[call.function.name](**args)
+    if call.function.name == "add":
+        args = json.loads(call.function.arguments)
+        content = str(add(**args))
+    else:
+        content = f"Unknown tool: {call.function.name}"
     messages.append(
         {
             "role": "tool",
             "tool_call_id": call.id,
-            "content": str(result),
+            "content": content,
         }
     )
 
@@ -245,9 +234,17 @@ resp2 = completion(
 print(resp2.choices[0].message.content)
 ```
 
-**Expected:** a sentence that includes `42`.
+**Expected:** first `your process ran add(41.0, 1.0)` (or `41` / `1` without `.0`) — then a sentence that includes `42`.
 
-That is the whole agent. Wrap it in `while` next.
+That print is the same proof as Phase 0: your process ran, not the model.
+
+**What just moved:**
+
+1. You stored the assistant's proposal on `messages`.
+2. You ran `add` and appended `role: "tool"` with the same `id`.
+3. The second `completion` saw that number and wrote the sentence.
+
+That is the whole agent. Wrap it in a loop next.
 
 ---
 
@@ -272,13 +269,15 @@ def run_add(raw_json: str) -> str:
     return str(add(args.a, args.b))
 ```
 
-Use `run_add(call.function.arguments)` instead of `json.loads` + `**`. Generate schema from Pydantic **only after** you wrote JSON by hand once.
+In the Segment 4 `for` loop, replace `json.loads` + `add(**args)` with `run_add(call.function.arguments)`. Generate schema from Pydantic **only after** you wrote JSON by hand once.
 
 ---
 
 ## Segment 6 — `max_steps` raises
 
 A silent `return` teaches the wrong lesson. Runaway loops are a failure.
+
+Replace the one-shot Segment 3–4 prints with this. Keep `TOOLS`, `add`, `AddArgs`, and `run_add`.
 
 ```python
 MAX_STEPS = 8
@@ -315,7 +314,32 @@ if __name__ == "__main__":
     print(run_agent("What is 41 + 1?"))
 ```
 
-**Expected:** `42` in the printed answer. To test the guard, temporarily set `MAX_STEPS = 1` and a prompt that forces a tool call — you should get `RuntimeError`, not a partial answer.
+**Expected:** `your process ran add(...)` then `42` in the printed answer. To test the guard, temporarily set `MAX_STEPS = 1` and a prompt that forces a tool call — you should get `RuntimeError`, not a partial answer.
+
+**What just moved:**
+
+1. Same `messages` list as Segment 3, now inside a function.
+2. Each `for` step is one `completion`.
+3. Append the assistant message **first** — the next call must see the `tool_calls` it proposed.
+4. No `tool_calls` → that text is the answer. Return it.
+5. Else run `run_add` (or `"Unknown tool"`).
+6. Append `role: "tool"` with the same `id`. The next step the model sees the number.
+7. If the `for` ends without returning: raise. Do not return a half-answer.
+
+```mermaid
+flowchart TD
+  A[messages + tools schema] --> B["litellm.completion(model=...)"]
+  B --> C{finish_reason / tool_calls?}
+  C -->|no tool_calls| D[print assistant text — done]
+  C -->|tool_calls| E[validate args with Pydantic]
+  E -->|ok| F[run Python function]
+  E -->|ValidationError| G[error string as tool content]
+  F --> H["append role: tool + tool_call_id"]
+  G --> H
+  H --> I{step < max_steps?}
+  I -->|yes| B
+  I -->|no| J[raise — do not return]
+```
 
 ---
 
@@ -347,12 +371,14 @@ Do not add streaming or retries in this file. Do not start the LiteLLM proxy.
 | Symptom | Cause / fix |
 |---|---|
 | Pydantic serializer warning on `tool_calls` | Harmless. Gemini extra fields on the LiteLLM `Message` you appended. The tool still ran. Pydantic has no env mute like `LITELLM_LOG` — ignore it. |
+| Huge dump / `thought_signature` | You printed `resp` or `msg`. Print the three fields in Segment 3 instead. |
+| Sentence with `42` but no `your process ran add(...)` | The model did the math itself. Tighten the system prompt. |
 
 ---
 
 ## Your finished file
 
-`agents/foundation/02_tool_loop.py` — `MODEL`, `TOOLS`, `AddArgs`, `run_add`, `run_agent`, `if __name__`. Roughly 60–80 lines.
+`agents/foundation/02_tool_loop.py` — `MODEL`, `TOOLS`, `add` (with the process print), `AddArgs`, `run_add`, `run_agent`, `if __name__`. Roughly 60–80 lines. No `FUNCTIONS` dict — one `if` on the tool name is enough.
 
 ## Checkpoint
 

@@ -1,6 +1,6 @@
 # Phase 5 — RAG decomposed (by hand)
 
-Last grounded: 2026-08-27  
+Last grounded: 2026-08-31  
 Prereq files: `docs/05-phase-4-rag-fast.md`  
 Fetch before writing:  
 - https://docs.trychroma.com/docs/overview/getting-started  
@@ -120,6 +120,8 @@ for name, body in texts.items():
 
 **Expected:** four files listed. If zero, print `DATA_DIR` and fix the path.
 
+Keep `MODEL`, `API_KEY`, `DATA_DIR`, and `texts`. Next: split one file.
+
 ## Segment 2 — Chunk (and watch an idea get cut)
 
 ```python
@@ -134,6 +136,8 @@ for c in chunk(texts["overlap-demo.txt"], size=80, overlap=0)[:4]:
 
 **Expected:** clean 80-char slices. Now find where the memo's fact landed: print the two chunks whose edges contain `"approved on"` / `"February"`. With no overlap, the date phrase is likely split across two chunks.
 
+Keep `chunk`. Next: the same function with overlap.
+
 ## Segment 3 — Overlap fixes it
 
 ```python
@@ -144,7 +148,9 @@ print(len(hits), "chunk(s) contain the full date")
 
 **Expected:** at least one chunk holds the whole sentence. That's the whole argument for overlap — watch it fail, then watch it work. (If size 80 already kept the date intact on your machine, drop to `size=60, overlap=30` and see it split, then heal.)
 
-Note the tradeoff you just paid: more chunks, duplicated text, bigger index. There is no free lunch knob.
+**What just moved:** overlap copies the tail of chunk *n* onto the head of chunk *n+1*. The date phrase now exists intact in at least one chunk. You paid for that with more chunks and duplicated text.
+
+Keep `chunk` with overlap 40 for the rest of this file.
 
 ## Segment 4 — Embed and store your own vectors
 
@@ -174,6 +180,10 @@ Passing `embeddings=` explicitly is the point — Chroma's default embedder stay
 
 **Expected:** a count like `40–60` (depends on file lengths). Rerun-safe tip: `get_or_create_collection` + repeated `add` duplicates rows; delete `chroma_db_handmade/` between runs while experimenting.
 
+**What just moved:** you are the index builder. `model.encode` is Phase 4's `HuggingFaceEmbedding`. `collection.add(embeddings=...)` is `VectorStoreIndex.from_documents`. Chroma did not embed for you.
+
+Keep `model`, `collection`, `all_chunks`. Next: query that collection.
+
 ## Segment 5 — Retrieve and generate
 
 ```python
@@ -199,7 +209,16 @@ resp = completion(
 print(resp.choices[0].message.content)
 ```
 
-**Expected:** top hit contains the Nightjar date (distance clearly smallest); answer says **12 February 2024**. Compare with Phase 4: same stages, but you can now point at the line doing each one.
+**Expected:** top hit contains the Nightjar date (distance clearly smallest); answer says **12 February 2024**.
+
+The query result path (do not dump `res`):
+
+```
+res["documents"][0]   → the k chunk strings
+res["distances"][0]   → smaller is closer (not a probability)
+```
+
+**What just moved:** `encode(query)` + `collection.query` is Phase 4's retriever. Stuffing those strings into `completion(...)` is `as_query_engine().query`. Same stages, your lines.
 
 ## Segment 6 — Deepening: async timing (honest version)
 
@@ -207,11 +226,10 @@ print(resp.choices[0].message.content)
 
 `async def` marks a function that can **pause**. When it hits `await`, it hands control back to the event loop, which runs something else and comes back later. That is *concurrency* (overlapping waits), not *parallelism* (simultaneous work). Perfect when the wait is external — an HTTP call, a database. Useless for pure CPU work, because CPU code never pauses to yield.
 
-The two tools this segment uses: `asyncio.gather` starts both waits and resumes when both finish; `asyncio.to_thread` pushes blocking code off the event loop's thread.
+The one tool this segment uses: `asyncio.gather` starts both waits and resumes when both finish. `loop.run_in_executor` (below) pushes blocking `encode` off the event loop's thread so `gather` has something to await.
 
 ```python
 await asyncio.gather(task_a, task_b)
-await asyncio.to_thread(blocking_fn)
 ```
 
 That's all you need. The experiment below will show you when this helps and when it doesn't.
@@ -273,7 +291,7 @@ Token-vs-character, stated once: MiniLM truncates around **256 tokens** (~roughl
 
 ## Your finished file
 
-`agents/llamaindex/05_rag_decomposed.py` — env/path constants, `texts` loader, `chunk()`, model + collection setup, ingest block, retrieve-and-generate function, timing block, groundedness demo behind `if __name__`. Roughly 90–120 lines.
+`agents/llamaindex/05_rag_decomposed.py` — env/path constants, `texts` loader, `chunk()`, model + collection setup, ingest block, retrieve-and-generate (inline), timing block, groundedness demo behind `if __name__`. Roughly 90–120 lines.
 
 ## Checkpoint
 
