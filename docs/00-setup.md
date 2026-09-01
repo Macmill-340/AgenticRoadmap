@@ -1,7 +1,6 @@
 # Setup
 
-Suggested file: `agents/foundation/pyproject.toml` (already exists; see section 3)  
-GitHub-facing overview lives in the root `README.md`; this file is the hands-on install guide.
+Suggested file: `agents/foundation/pyproject.toml` (already exists; see section 3)
 
 ## What this sets up
 
@@ -15,7 +14,7 @@ Chat goes through **LiteLLM → Gemini** (reliable tool-calling, no multi-GB loc
 
 ## How to read a phase doc
 
-Each phase file is a self-contained guide. Implement **one segment** in the same `.py` the guide named: keep what it says to keep, add or replace the rest, run, match expected output, then the next segment. Print the field path the guide names (`resp.choices[0].message.content`), not the whole object.
+Each phase file is a self-contained guide. Implement **one segment** in the same `.py` the guide named: keep what it says to keep, add or replace the rest, run, match expected output, then the next segment.
 
 ---
 
@@ -106,7 +105,7 @@ Adding a package mid-course:
 uv add <package>    # updates pyproject.toml + uv.lock + .venv together
 ```
 
-Experiment freely with `uv pip install whatever-you-are-testing` — the next `uv sync` removes anything the lock does not know. No wipe-to-refreeze, ever. Commit `uv.lock` changes together with your code/doc changes.
+Experiment freely with `uv pip install whatever-you-are-testing` — the next `uv sync` removes anything the lock does not know. No wipe-to-refreeze, ever.
 
 Run (either way works; `activate` is optional for `uv run`):
 

@@ -37,12 +37,10 @@ Recite this after any break: one sentence per layer, then the recipe.
 - **Graph** — the loop as boxes: state in, nodes work, edges decide next. A checkpointer keeps the thread; `interrupt` pauses it.
 - **Supervisor** — one agent whose tools are other agents.
 
-Later phases (conventions) append their line here as each guide is written.
-
 ## How to follow
 
 1. Do [`docs/00-setup.md`](docs/00-setup.md) end to end (~10 min): pick an editor that can preview mermaid (or use GitHub / mermaid.live), install uv, `cp .env.example .env`, set a free Gemini key.
-2. Open the next guide, run its `uv` block (creates the file only if missing — safe to re-run), and work **one segment at a time**: keep what the guide says to keep, add or replace the rest, run, match expected output, then the next segment. Do not print whole API objects — use the field path the guide names.
+2. Open the next guide, run its `uv` block (creates the file only if missing — safe to re-run), and work **one segment at a time**: keep what the guide says to keep, add or replace the rest, run, match expected output, then the next segment.
 3. Every guide ends with checkpoint questions (answers included) — if you cannot answer them, rerun the segment.
 4. Milestone guides (2, 3, 6, 7/7b) end with an optional **Try this**: one small build of your own using what you just wrote. Skip it or invent something else — both are fine.
 
@@ -70,7 +68,7 @@ One uv project per layer so dependency trees never fight:
 | `agents/langgraph/` | 7, 7b, 9 |
 | `agents/smolagents/` | created only if Phase 8 is written |
 
-Each folder is its own uv project: `pyproject.toml` lists direct deps, the committed `uv.lock` pins every resolved version. Run the guide's `uv` block — `if (Test-Path agents/<group>) { cd agents/<group> }` + `uv sync` + `activate` + `if (-not (Test-Path <phase_file>.py)) { New-Item ... }` (Windows) or `[ -d agents/<group> ] && cd ...` + `source .venv/bin/activate` + `touch` (macOS/Linux) — the last line is idempotent, safe to re-run. Extend later with `uv add`. Experiments installed ad hoc are cleaned by the next `uv sync`.
+Each folder is its own uv project: `pyproject.toml` lists direct deps, the committed `uv.lock` pins every resolved version. Run that folder's `uv` block when you reach it. `uv add` extends later; the next `uv sync` drops anything not in the lock.
 
 ## Repo layout
 

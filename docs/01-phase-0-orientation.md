@@ -26,7 +26,7 @@ Open `00_orientation.py` in your IDE — you will write the segments below there
 New terminals (VS Code, Cursor) usually open at the repo root; PyCharm sometimes restores already inside the folder. That `if` / `[ -d ... ] &&` does the right thing either way.
 
 Suggested file: `agents/foundation/00_orientation.py`  
-Mode: **abstraction**, ~20 lines, not graded.
+Mode: **abstraction**, ~20 lines.
 
 ## What you'll run
 
@@ -35,8 +35,6 @@ A LlamaIndex `FunctionAgent` with **one** tool, through LiteLLM → Gemini. The 
 ## Why it matters
 
 Everything later gets explained against something you've watched run, not a slide. Keep it to ~20 lines: no error handling, no RAG, no second tool.
-
-**Not `AgentWorkflow`.** Official one-tool starter is `FunctionAgent`. `AgentWorkflow` is for multiple agents (Phase 7b).
 
 Chat goes through **LiteLLM**, not the Google SDK. Swap providers later by changing the model string.
 
@@ -191,6 +189,7 @@ flowchart LR
 | `str \| None` on `model=` | You dropped the default. Use `os.getenv("GEMINI_MODEL", "gemini/gemini-3.5-flash-lite")`. |
 | Answers without calling the tool | Tighten the prompt: `"Use the multiply tool. What is 1234 * 4567?"` |
 | `asyncio` error in notebook vs script | Script needs `asyncio.run`. Notebooks can `await` at top level. |
+| Tutorial uses `AgentWorkflow` | Official one-tool starter is `FunctionAgent`. `AgentWorkflow` is for multiple agents (Phase 7b). |
 
 Do not add chat history, RAG, or a second tool here.
 
