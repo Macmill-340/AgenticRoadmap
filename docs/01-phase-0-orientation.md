@@ -79,7 +79,42 @@ An agent is an LLM plus tools plus a loop. Here the framework owns the loop. Pha
 
 ### Async in 20 seconds
 
-`FunctionAgent.run` waits on the network, so it is `async`. Three words: `async def` marks a function that can pause; `await` pauses until Gemini answers; `asyncio.run` starts the event loop (scripts only).
+`FunctionAgent.run` waits on the network, so it is `async`. You are not overlapping two jobs here. You are pausing until Gemini answers.
+
+Same wait, two shapes. Read, do not paste — your file stays the agent snippet below.
+
+**Synchronous** — `time.sleep` freezes everything until it finishes.
+
+```python
+import time
+
+def fetch():
+    time.sleep(2)
+
+fetch()
+```
+
+**Asynchronous** — `await` is the pause. Here you just need it so `run` can talk to Gemini.
+
+```python
+import asyncio
+
+async def fetch():
+    await asyncio.sleep(2)
+
+async def main():
+    await fetch()
+
+asyncio.run(main())
+```
+
+| Change | Sync | Async |
+|---|---|---|
+| Function definition | `def` | `async def` |
+| The wait | `time.sleep(...)` | `await asyncio.sleep(...)` |
+| Start it | call the function | `asyncio.run(main())` |
+
+Three words you will type: `async def` marks a function that can pause; `await` pauses until Gemini answers; `asyncio.run` starts the event loop (scripts only).
 
 ```python
 async def main() -> None:

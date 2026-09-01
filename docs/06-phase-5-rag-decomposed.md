@@ -239,9 +239,51 @@ The one tool this segment uses: `asyncio.gather` starts both waits and resumes w
 await asyncio.gather(task_a, task_b)
 ```
 
-That's all you need. The experiment below will show you when this helps and when it doesn't.
+Read, do not paste. Two waits, side by side. This is the overlap Phase 0 skipped.
 
-Embedding calls are I/O-shaped, which is why everyone reaches for `asyncio.gather`. But MiniLM runs **on CPU**, and CPU work does not yield to the event loop. See both truths yourself:
+**Synchronous** — one after the other. About 5 seconds (2 + 3).
+
+```python
+import time
+
+def fetch_data(n, delay):
+    print(f"Task {n}: start")
+    time.sleep(delay)
+    print(f"Task {n}: done")
+
+fetch_data(1, 2)
+fetch_data(2, 3)
+```
+
+**Asynchronous** — `gather` starts both. About 3 seconds (they overlap).
+
+```python
+import asyncio
+
+async def fetch_data(n, delay):
+    print(f"Task {n}: start")
+    await asyncio.sleep(delay)
+    print(f"Task {n}: done")
+
+async def main():
+    await asyncio.gather(
+        fetch_data(1, 2),
+        fetch_data(2, 3),
+    )
+
+asyncio.run(main())
+```
+
+| Change | Sync | Async |
+|---|---|---|
+| Function definition | `def` | `async def` |
+| The wait | `time.sleep(...)` | `await asyncio.sleep(...)` |
+| Running the tasks | one after another | `asyncio.gather(...)` |
+| Start it | call the function | `asyncio.run(main())` |
+
+The key line is `await asyncio.sleep(delay)`: that `await` hands control back so the other task can run. `time.sleep` freezes everything.
+
+Embedding calls look like I/O, which is why people reach for `gather`. MiniLM runs **on CPU**, so you will not get that 5-versus-3 win. See both truths yourself:
 
 ```python
 import asyncio
