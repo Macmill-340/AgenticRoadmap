@@ -146,7 +146,7 @@ Keep `MessagesState`, `StateGraph`, `START`, `END`. Next segment replaces `hello
 
 A decorator is a function that takes a function and returns one. `@mark` above `def greet` is the same as `greet = mark(greet)` after the def.
 
-Same wrapping, two shapes. Read, do not paste.
+Run both in a scratch file — not in `07_graph.py`. You should see the same two lines either way.
 
 **Without:**
 
@@ -161,6 +161,8 @@ def greet():
 
 
 greet = mark(greet)
+print(greet())
+print(greet.marked)
 ```
 
 **With:**
@@ -174,6 +176,17 @@ def mark(fn):
 @mark
 def greet():
     return "hi"
+
+
+print(greet())
+print(greet.marked)
+```
+
+**Expected (both):**
+
+```
+hi
+True
 ```
 
 | Change | After the def | `@` above the def |

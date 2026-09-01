@@ -264,18 +264,7 @@ Do not crash the loop on bad JSON. The observation *is* the error string.
 
 The model sends arguments as a JSON string, not a Python dict. `json.loads` crashes on junk. Pydantic turns that string into typed fields, or gives you an error to send back.
 
-Same payload, two shapes. Read, do not paste.
-
-**Without** — crash on junk:
-
-```python
-import json
-
-args = json.loads(raw_json)
-add(args["a"], args["b"])
-```
-
-**With** — bad JSON becomes a string you return:
+Run this in a scratch file — not in `02_tool_loop.py`. You need this because a bad tool payload must not kill the loop.
 
 ```python
 from pydantic import BaseModel, ValidationError
@@ -286,19 +275,27 @@ class AddArgs(BaseModel):
     b: float
 
 
-try:
-    args = AddArgs.model_validate_json(raw_json)
-except ValidationError as exc:
-    return f"Invalid arguments: {exc}"
+def run_add(raw_json: str) -> str:
+    try:
+        args = AddArgs.model_validate_json(raw_json)
+    except ValidationError as exc:
+        return f"Invalid arguments: {exc}"
+    return str(args.a + args.b)
+
+
+print(run_add('{"a": 1, "b": 2}'))
+print(run_add("nope"))
 ```
+
+**Expected:** first line `3.0`. Second line starts with `Invalid arguments:` and names the JSON problem. The process did not crash.
 
 | Change | `json.loads` | Pydantic |
 |---|---|---|
 | Parse | dict or crash | `AddArgs` or `ValidationError` |
 | Types | you hope | `a` and `b` are floats |
-| Bad input | your process dies | error string goes back as `role: "tool"` |
+| Bad input | your process dies | error string you can send back as `role: "tool"` |
 
-You need this because a bad tool payload must not kill the loop. Forcing the *model's* JSON shape (structured output) is Phase 9.
+Forcing the *model's* JSON shape (structured output) is Phase 9. Here you only validate what the model already emitted.
 
 ```python
 from pydantic import BaseModel, ValidationError
@@ -443,6 +440,40 @@ Answers: (1) the model emitted tokens, not a Python dict; (2) `"tool"`; (3) send
 
 ## Try this
 
-Keep the loop. Keep `add`. Invent **one** more tool you would actually use — a `now()` clock, a fake weather lookup, a `remember(key, value)` stub, anything — write its JSON schema by hand like Segment 2, then give it one user line that needs **both** tools ("add 12 + 30 and remember that I owe 42").
+Keep the loop. Keep `add`. Add **one** more tool — pick one of these, or invent your own — write its JSON schema by hand like Segment 2, then give it one user line that needs **both** tools.
 
-Done when you see both `role: "tool"` messages in the transcript and a final answer using both results. Skip it or invent something else entirely — that is the point.
+Copy the schema the same way you copied `add`: `name`, a one-line `description`, `parameters`. Then a tiny Python function and one more `if` in the dispatch.
+
+**`now()`** — no arguments. `description`: `"Return today's date and time."`
+
+```python
+from datetime import datetime
+
+
+def now() -> str:
+    print("your process ran now()")
+    return datetime.now().isoformat(timespec="seconds")
+```
+
+**`dice(sides)`** — one number. `description`: `"Roll a die with this many sides."`
+
+```python
+import random
+
+
+def dice(sides: int) -> int:
+    print(f"your process ran dice({sides})")
+    return random.randint(1, sides)
+```
+
+**`shout(text)`** — one string. `description`: `"Repeat the text in capital letters."`
+
+```python
+def shout(text: str) -> str:
+    print(f"your process ran shout({text})")
+    return text.upper()
+```
+
+Example user line if you pick `now`: `"What is 12 + 30, and what time is it?"`
+
+Done when you see both `role: "tool"` messages and a final answer using both results. Skip it or invent something else entirely — that is the point. A tool is just a function plus a label. The model never sees the body.

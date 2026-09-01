@@ -233,39 +233,69 @@ The one tool this segment uses: `asyncio.gather` starts both waits and resumes w
 await asyncio.gather(task_a, task_b)
 ```
 
-Read, do not paste. Two waits, side by side. This is the overlap Phase 0 skipped.
+Run these two in a scratch file — not in `05_rag_decomposed.py`. This is the overlap Phase 0 skipped: two waits, side by side.
 
-**Synchronous** — one after the other. About 5 seconds (2 + 3).
+**Synchronous** — one after the other.
 
 ```python
 import time
+
 
 def fetch_data(n, delay):
     print(f"Task {n}: start")
     time.sleep(delay)
     print(f"Task {n}: done")
 
+
+t0 = time.perf_counter()
 fetch_data(1, 2)
 fetch_data(2, 3)
+print(f"elapsed: {time.perf_counter() - t0:.1f}s")
 ```
 
-**Asynchronous** — `gather` starts both. About 3 seconds (they overlap).
+**Expected:**
+
+```
+Task 1: start
+Task 1: done
+Task 2: start
+Task 2: done
+elapsed: 5.0s
+```
+
+**Asynchronous** — `gather` starts both. They overlap.
 
 ```python
 import asyncio
+import time
+
 
 async def fetch_data(n, delay):
     print(f"Task {n}: start")
     await asyncio.sleep(delay)
     print(f"Task {n}: done")
 
+
 async def main():
+    t0 = time.perf_counter()
     await asyncio.gather(
         fetch_data(1, 2),
         fetch_data(2, 3),
     )
+    print(f"elapsed: {time.perf_counter() - t0:.1f}s")
+
 
 asyncio.run(main())
+```
+
+**Expected:** both start before either finishes. Elapsed about `3.0s` (the longer wait), not 5. Order of `done` can vary.
+
+```
+Task 1: start
+Task 2: start
+Task 1: done
+Task 2: done
+elapsed: 3.0s
 ```
 
 | Change | Sync | Async |
@@ -275,7 +305,7 @@ asyncio.run(main())
 | Running the tasks | one after another | `asyncio.gather(...)` |
 | Start it | call the function | `asyncio.run(main())` |
 
-The key line is `await asyncio.sleep(delay)`: that `await` hands control back so the other task can run. `time.sleep` freezes everything.
+The key line is `await asyncio.sleep(delay)`: that `await` hands control back so the other task can run. `time.sleep` freezes everything. That 5-versus-3 win is a **network-shaped** wait. A later tool that fetches a URL (`httpx`, `fetch`) is that case. Do not add that package here.
 
 Embedding calls look like I/O, which is why people reach for `gather`. MiniLM runs **on CPU**, so you will not get that 5-versus-3 win. See both truths yourself:
 

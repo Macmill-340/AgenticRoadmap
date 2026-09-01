@@ -74,7 +74,7 @@ An agent is an LLM plus tools plus a loop. Here the framework owns the loop. Pha
 
 `FunctionAgent.run` waits on the network, so it is `async`. You are not overlapping two jobs here. You are pausing until Gemini answers.
 
-Same wait, two shapes. Read, do not paste — your file stays the agent snippet below.
+Run these two snippets in a scratch file — not in `00_orientation.py`. Each waits two seconds. Watch the prints and the elapsed time.
 
 **Synchronous** — `time.sleep` freezes everything until it finishes.
 
@@ -82,24 +82,43 @@ Same wait, two shapes. Read, do not paste — your file stays the agent snippet 
 import time
 
 def fetch():
+    print("start")
     time.sleep(2)
+    print("done")
 
+t0 = time.perf_counter()
 fetch()
+print(f"elapsed: {time.perf_counter() - t0:.1f}s")
 ```
 
-**Asynchronous** — `await` is the pause. Here you just need it so `run` can talk to Gemini.
+**Expected:**
+
+```
+start
+done
+elapsed: 2.0s
+```
+
+**Asynchronous** — `await` is the pause. Python can hand control back during a wait (Phase 5 uses that). Here you just need the pause so `run` can talk to Gemini.
 
 ```python
 import asyncio
+import time
 
 async def fetch():
+    print("start")
     await asyncio.sleep(2)
+    print("done")
 
 async def main():
+    t0 = time.perf_counter()
     await fetch()
+    print(f"elapsed: {time.perf_counter() - t0:.1f}s")
 
 asyncio.run(main())
 ```
+
+**Expected:** the same three lines, still about `2.0s`. Same speed. You are learning the *shape*, not a speedup.
 
 | Change | Sync | Async |
 |---|---|---|
@@ -107,7 +126,7 @@ asyncio.run(main())
 | The wait | `time.sleep(...)` | `await asyncio.sleep(...)` |
 | Start it | call the function | `asyncio.run(main())` |
 
-Three words you will type: `async def` marks a function that can pause; `await` pauses until Gemini answers; `asyncio.run` starts the event loop (scripts only).
+Three words you will type in the agent file: `async def` marks a function that can pause; `await` pauses until Gemini answers; `asyncio.run` starts the event loop (scripts only).
 
 ```python
 async def main() -> None:
@@ -115,9 +134,29 @@ async def main() -> None:
 asyncio.run(main())
 ```
 
-That's all you need here. Phase 5 covers running several waits at once.
+That's all you need here. Phase 5 covers running several waits at once — that is where two jobs overlap and the clock actually changes.
 
-A **tool** is a normal Python function you hand to the agent. The model never sees your source code. It sees three things: the function **name**, the **argument types**, and the **docstring** — the `"""..."""` line under `def`. That text is a short label so Gemini knows this tool multiplies.
+A **tool** is a normal Python function you hand to the agent. The model never sees your source code. It sees three things: the function **name**, the **argument types** (`a: float`, `b: float`), and the **docstring** — the `"""..."""` line under `def`. That text is a short label so Gemini knows this tool multiplies.
+
+Paste this one-liner under `def multiply` in your file:
+
+```python
+"""Multiply two numbers and return the product."""
+```
+
+Humans often write a longer Google-style block. Types already live in the signature (`a: float`), so you do not repeat `(float)` in Args. Read, do not paste — your `.py` keeps the one-liner.
+
+```python
+def multiply(a: float, b: float) -> float:
+    """Multiply two numbers and return the product.
+
+    Args:
+        a: first number
+        b: second number
+    """
+```
+
+The first sentence is what the model uses as a label. `Args` is a note for you. Official LlamaIndex starters use the one-liner; that is enough.
 
 ```python
 import asyncio
@@ -161,6 +200,10 @@ uv run python 00_orientation.py
 ```
 
 **Expected:** first a line like `your process ran multiply(1234.0, 4567.0)` — then a sentence containing `5635678` (or the product). You should not see `LiteLLM:WARNING` lines (`LITELLM_LOG=ERROR` in `.env`, and `load_dotenv()` before importing LiteLLM). If you only get the sentence, the model did the math itself; tighten the prompt.
+
+**Optional — lie to the model.** Change only `return a * b` to `return a + b`. Keep the name, the types, and the docstring. Rerun.
+
+**Expected:** `your process ran multiply(1234.0, 4567.0)` once or twice (the tool returns `5801`, which is not a product). Then a sentence with **5635678** — the real product. The model never saw `return a + b`. It trusted the docstring, got a wrong number, retried or gave up, and did the math itself. Put `return a * b` back before you continue.
 
 **What just moved:**
 
