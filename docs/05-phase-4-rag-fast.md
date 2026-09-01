@@ -1,15 +1,6 @@
 # Phase 4 — RAG fast (LlamaIndex)
 
-Last grounded: 2026-09-01  
-Prereq files: `docs/03-phase-2-tool-loop.md`, `docs/04-phase-3-state-memory.md`  
-Fetch before writing:  
-- https://docs.llamaindex.ai/en/stable/module_guides/supporting_modules/settings/  
-- https://docs.llamaindex.ai/en/stable/understanding/rag/  
-- https://docs.llamaindex.ai/en/stable/module_guides/loading/simpledirectoryreader/  
-- https://docs.llamaindex.ai/en/stable/integrations/embeddings/huggingface/  
-- https://docs.llamaindex.ai/en/stable/integrations/vector_stores/chromaindexdemo/  
-- https://docs.llamaindex.ai/en/stable/module_guides/querying/node_postprocessors/node_postprocessors/  
-- https://docs.trychroma.com/docs/overview/getting-started  
+Do first: `docs/03-phase-2-tool-loop.md`, `docs/04-phase-3-state-memory.md`  
 uv (new project group):
 
 **Windows (PowerShell):**
@@ -151,6 +142,36 @@ Note: MiniLM truncates inputs around **256 tokens**. Sample docs below are sized
 Keep these imports and `Settings` lines. The next segments add load, then persist, then query.
 
 ## Segment 2 — Load
+
+### pathlib in 20 seconds
+
+`data/` lives at the repo root, two folders above this file. A string join uses whatever directory you launched from. `Path(__file__)` does not.
+
+Same folder, two shapes. Read, do not paste.
+
+**Without** — depends on the current directory:
+
+```python
+import os
+
+DATA_DIR = os.path.join("data")
+```
+
+**With** — from this file, up to the repo root:
+
+```python
+from pathlib import Path
+
+DATA_DIR = Path(__file__).resolve().parents[2] / "data"
+```
+
+| Change | `os.path.join` | `Path` |
+|---|---|---|
+| Start from | the shell's cwd | this `.py` file |
+| Join | strings | `/ "data"` |
+| Windows | slashes fight you | `Path` handles it |
+
+You need this so `uv run` works from the repo root or from `agents/llamaindex`.
 
 ```python
 DATA_DIR = Path(__file__).resolve().parents[2] / "data"

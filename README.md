@@ -6,7 +6,7 @@ Each phase is a self-contained guide in [`docs/`](docs/): what, why, how, exact 
 
 ## The path
 
-Guides marked *pending* are written batch by batch, each grounded against current official docs first (see [`docs/MAINTENANCE.md`](docs/MAINTENANCE.md)).
+Guides marked *pending* are not written yet.
 
 | # | Topic | Mode | You write | Guide |
 |---|---|---|---|---|
@@ -75,14 +75,12 @@ Each folder is its own uv project: `pyproject.toml` lists direct deps, the commi
 ## Repo layout
 
 ```
-docs/      teaching guides + STATUS.md (tracks where you are) + MAINTENANCE.md (research rules)
+docs/      teaching guides
 agents/    uv skeletons — the .py files are yours to write
 data/      small local documents for the RAG phases
-AGENTS.md  starting point for AI coding sessions that extend the course
-README.md  this file — learner entry point
+AGENTS.md  for people extending the course, not for following it
+README.md  this file — start here
 ```
-
-This repo is built to grow through AI-assisted sessions: any new session starts from `AGENTS.md` → `docs/STATUS.md` → `docs/MAINTENANCE.md` and continues the next unchecked item, re-fetching official docs before writing.
 
 ## What this course leaves out
 

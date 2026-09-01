@@ -1,11 +1,6 @@
 # Phase 0 — Orientation
 
-Last grounded: 2026-09-01  
-Prereq files: `AGENTS.md`, `docs/00-setup.md`  
-Fetch before writing:  
-- https://docs.llamaindex.ai/en/stable/understanding/agent/  
-- https://docs.llamaindex.ai/en/stable/integrations/llm/litellm/  
-- https://docs.litellm.ai/docs/providers/gemini  
+Do first: `docs/00-setup.md`  
 uv (from `agents/foundation`):
 
 **Windows (PowerShell):**

@@ -7,6 +7,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 DOCS = ROOT / "docs"
 PHASE_GUIDES = sorted(DOCS.glob("*-phase-*.md"))
+LEARNER_DOCS = PHASE_GUIDES + [DOCS / "00-setup.md", ROOT / "README.md"]
+LLM_LEAKS = (
+    "Last grounded:",
+    "Fetch before writing",
+    "A new coding session",
+    "Prereq files:",
+)
 
 BANNED = (
     "packet",
@@ -93,6 +100,15 @@ def check(path: Path) -> list[str]:
             if "#" in strip_strings(line):
                 errors.append(f"python fence {i} line {line_no} has a # comment")
 
+    errors.extend(leak_errors(text))
+    return errors
+
+
+def leak_errors(text: str) -> list[str]:
+    errors: list[str] = []
+    for phrase in LLM_LEAKS:
+        if phrase in text:
+            errors.append(f"learner-facing LLM instruction: {phrase!r}")
     return errors
 
 
@@ -103,6 +119,22 @@ def main() -> int:
     failed = 0
     for path in PHASE_GUIDES:
         errors = check(path)
+        if errors:
+            failed += 1
+            print(f"{path.relative_to(ROOT)}")
+            for err in errors:
+                print(f"  - {err}")
+        else:
+            print(f"ok  {path.relative_to(ROOT)}")
+    for path in LEARNER_DOCS:
+        if path in PHASE_GUIDES:
+            continue
+        if not path.exists():
+            failed += 1
+            print(f"{path.relative_to(ROOT)}")
+            print("  - missing")
+            continue
+        errors = leak_errors(path.read_text(encoding="utf-8"))
         if errors:
             failed += 1
             print(f"{path.relative_to(ROOT)}")

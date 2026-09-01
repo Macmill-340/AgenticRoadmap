@@ -1,14 +1,6 @@
 # Phase 2 — The raw tool-calling loop
 
-Last grounded: 2026-09-01  
-Prereq files: `docs/00-setup.md`, `docs/01-phase-0-orientation.md`, `docs/02-phase-1-decoding.md`  
-Fetch before writing:  
-- https://docs.litellm.ai/docs/  
-- https://docs.litellm.ai/docs/providers/gemini  
-- https://platform.openai.com/docs/guides/function-calling  
-- https://docs.anthropic.com/en/docs/agents-and-tools/tool-use/overview  
-- https://docs.pydantic.dev/latest/concepts/models/  
-- https://huggingface.co/learn/agents-course/unit1/dummy-agent-library  
+Do first: `docs/00-setup.md`, `docs/01-phase-0-orientation.md`, `docs/02-phase-1-decoding.md`  
 uv (from `agents/foundation`):
 
 **Windows (PowerShell):**
@@ -267,6 +259,46 @@ That is the whole agent. Wrap it in a loop next.
 ## Segment 5 — Pydantic validates args; errors go **back to the model**
 
 Do not crash the loop on bad JSON. The observation *is* the error string.
+
+### Pydantic in 20 seconds
+
+The model sends arguments as a JSON string, not a Python dict. `json.loads` crashes on junk. Pydantic turns that string into typed fields, or gives you an error to send back.
+
+Same payload, two shapes. Read, do not paste.
+
+**Without** — crash on junk:
+
+```python
+import json
+
+args = json.loads(raw_json)
+add(args["a"], args["b"])
+```
+
+**With** — bad JSON becomes a string you return:
+
+```python
+from pydantic import BaseModel, ValidationError
+
+
+class AddArgs(BaseModel):
+    a: float
+    b: float
+
+
+try:
+    args = AddArgs.model_validate_json(raw_json)
+except ValidationError as exc:
+    return f"Invalid arguments: {exc}"
+```
+
+| Change | `json.loads` | Pydantic |
+|---|---|---|
+| Parse | dict or crash | `AddArgs` or `ValidationError` |
+| Types | you hope | `a` and `b` are floats |
+| Bad input | your process dies | error string goes back as `role: "tool"` |
+
+You need this because a bad tool payload must not kill the loop. Forcing the *model's* JSON shape (structured output) is Phase 9.
 
 ```python
 from pydantic import BaseModel, ValidationError

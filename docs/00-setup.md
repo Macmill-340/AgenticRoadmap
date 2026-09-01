@@ -1,8 +1,5 @@
 # Setup
 
-Last grounded: 2026-08-31  
-Prereq files: `AGENTS.md`  
-Fetch before writing later phases: uv + LiteLLM + Gemini URLs in `docs/MAINTENANCE.md`  
 Suggested file: `agents/foundation/pyproject.toml` (already exists; see section 3)  
 GitHub-facing overview lives in the root `README.md`; this file is the hands-on install guide.
 
@@ -19,8 +16,6 @@ Chat goes through **LiteLLM → Gemini** (reliable tool-calling, no multi-GB loc
 ## How to read a phase doc
 
 Each phase file is a self-contained guide. Implement **one segment** in the same `.py` the guide named: keep what it says to keep, add or replace the rest, run, match expected output, then the next segment. Print the field path the guide names (`resp.choices[0].message.content`), not the whole object.
-
-A new coding session: read `AGENTS.md` → `docs/STATUS.md` → `docs/MAINTENANCE.md` → the next phase doc.
 
 ---
 
@@ -143,11 +138,11 @@ The course assumes everyday Python: functions, dicts, lists, f-strings, `if __na
 
 | Topic | First used | The 10-second version |
 |---|---|---|
-| Type hints + `TypedDict` | Phase 3 | `state: dict[str, str]` — a dict with its key/value types spelled out |
-| `pydantic.BaseModel` | Phase 2 | a class whose fields validate data the moment you create it |
-| `pathlib.Path` | Phase 4 | file paths as objects; `Path(__file__).parent` is the folder this file lives in |
-| `async` / `await` | Phase 0 | three words to run `FunctionAgent`; gather / concurrency is Phase 5 |
-| Decorators (`@name`) | Phase 7 | taught in Phase 7, right before `@tool` |
+| Type hints + `TypedDict` | Phase 3 | a dict at runtime; named keys for the type checker |
+| `pydantic.BaseModel` | Phase 2 | typed fields; a bad payload becomes an error string, not a crash |
+| `pathlib.Path` | Phase 4 | paths from this file, not from the shell's cwd |
+| `async` / `await` | Phase 0 | one wait for `FunctionAgent.run`; gather / overlap is Phase 5 |
+| Decorators (`@name`) | Phase 7 | `@mark` means `greet = mark(greet)`; then `@tool` |
 
 Nothing deeper is assumed.
 
@@ -176,7 +171,7 @@ print(resp.choices[0].message.content)
 ```
 AgenticRoadmap/
   README.md
-  AGENTS.md
+  AGENTS.md            # for people extending the course, not for following it
   docs/
   .env.example         # copy to .env; never commit .env
   .env                 # your key (gitignored)

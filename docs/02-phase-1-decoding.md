@@ -1,11 +1,6 @@
 # Phase 1 — How decoding actually works
 
-Last grounded: 2026-08-27  
-Prereq files: `docs/01-phase-0-orientation.md`  
-Fetch before writing:  
-- https://huggingface.co/learn/agents-course/unit1/what-are-llms  
-- https://huggingface.co/learn/agents-course/unit1/dummy-agent-library  
-- https://huggingface.co/spaces/Xenova/the-tokenizer-playground  
+Do first: `docs/01-phase-0-orientation.md`  
 uv: none required (HF Spaces are the demo)  
 Suggested file: none  
 Mode: **concept-only**. No neural nets. No training. No architecture diagrams.

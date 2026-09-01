@@ -1,10 +1,6 @@
 # Phase 6 — RAG as a tool (the glue)
 
-Last grounded: 2026-09-01  
-Prereq files: `docs/03-phase-2-tool-loop.md`, `docs/05-phase-4-rag-fast.md`  
-Fetch before writing:  
-- https://docs.litellm.ai/docs/providers/gemini  
-- https://docs.llamaindex.ai/en/stable/integrations/vector_stores/chromaindexdemo/  
+Do first: `docs/03-phase-2-tool-loop.md`, `docs/05-phase-4-rag-fast.md`  
 uv (same group as Phases 4–5):
 
 **Windows (PowerShell):**

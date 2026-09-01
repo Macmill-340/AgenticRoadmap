@@ -1,12 +1,6 @@
 # Phase 7b — Multi-agent (supervisor, then a handoff contrast)
 
-Last grounded: 2026-09-01  
-Prereq files: `docs/08-phase-7-langgraph.md`  
-Fetch before writing:  
-- https://docs.langchain.com/oss/python/langchain/multi-agent  
-- https://docs.langchain.com/oss/python/langchain/multi-agent/subagents  
-- https://docs.langchain.com/oss/python/langchain/multi-agent/handoffs  
-- https://docs.llamaindex.ai/en/stable/understanding/agent/multi_agent/  
+Do first: `docs/08-phase-7-langgraph.md`  
 uv (same group as Phase 7):
 
 **Windows (PowerShell):**

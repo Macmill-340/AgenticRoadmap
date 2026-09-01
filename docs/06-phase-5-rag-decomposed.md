@@ -1,12 +1,6 @@
 # Phase 5 — RAG decomposed (by hand)
 
-Last grounded: 2026-09-01  
-Prereq files: `docs/05-phase-4-rag-fast.md`  
-Fetch before writing:  
-- https://docs.trychroma.com/docs/overview/getting-started  
-- https://docs.litellm.ai/docs/  
-- https://docs.llamaindex.ai/en/stable/getting_started/async_python/ (gather pattern only)  
-- https://docs.llamaindex.ai/en/stable/module_guides/loading/node_parsers/ (pointer: what `SentenceSplitter` does for you)  
+Do first: `docs/05-phase-4-rag-fast.md`  
 uv (same group as Phase 4):
 
 **Windows (PowerShell):**

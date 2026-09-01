@@ -1,11 +1,6 @@
 # Phase 3 — State and memory by hand
 
-Last grounded: 2026-09-01  
-Prereq files: `docs/00-setup.md`, `docs/02-phase-1-decoding.md`, `docs/03-phase-2-tool-loop.md`  
-Fetch before writing:  
-- https://docs.litellm.ai/docs/completion/token_usage  
-- https://docs.litellm.ai/docs/providers/gemini  
-- https://docs.langchain.com/oss/python/langgraph/graph-api (read the Reducers + `MessagesState` part only — foreshadow, do not import)  
+Do first: `docs/00-setup.md`, `docs/02-phase-1-decoding.md`, `docs/03-phase-2-tool-loop.md`  
 uv (from `agents/foundation`):
 
 **Windows (PowerShell):**
@@ -221,6 +216,41 @@ print(run_agent(messages, "What is 41 + 1?"))
 ## Segment 3 — Facts that survive when history is trimmed
 
 History alone is fragile (Segment 4 proves it). Add a second channel: facts the agent writes with a `remember` tool, rendered into the system prompt every call.
+
+### TypedDict in 20 seconds
+
+`AgentState` looks like a class. At runtime it is still a dict. The names are for you and the type checker.
+
+Same data, two shapes. Read, do not paste.
+
+**Without** — keys are strings you can misspell:
+
+```python
+state = {"messages": [], "facts": {}}
+state["mesages"] = []
+```
+
+**With** — the keys have names:
+
+```python
+from typing import TypedDict
+
+
+class AgentState(TypedDict):
+    messages: list
+    facts: dict[str, str]
+
+
+state: AgentState = {"messages": [], "facts": {}}
+```
+
+| Change | plain dict | TypedDict |
+|---|---|---|
+| Runtime | dict | still a dict |
+| Keys | any string | `messages` and `facts` |
+| Misspell | silent | your editor underlines it |
+
+You need this because state is two channels — history and facts — and you will type those keys a lot.
 
 Replace the bare `messages` list with a dict. Keep `ADD_TOOL` / `add` / `run_add`. Add `remember` beside `add`:
 

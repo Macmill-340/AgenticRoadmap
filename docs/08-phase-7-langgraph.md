@@ -1,13 +1,6 @@
 # Phase 7 — LangGraph (the loop becomes a graph)
 
-Last grounded: 2026-09-01  
-Prereq files: `docs/03-phase-2-tool-loop.md`, `docs/04-phase-3-state-memory.md`, `docs/07-phase-6-rag-as-tool.md`  
-Fetch before writing:  
-- https://docs.langchain.com/oss/python/langgraph/overview  
-- https://docs.langchain.com/oss/python/langgraph/graph-api  
-- https://docs.langchain.com/oss/python/langgraph/checkpointers  
-- https://docs.langchain.com/oss/python/langgraph/interrupts  
-- https://docs.langchain.com/oss/python/langchain/tools  
+Do first: `docs/03-phase-2-tool-loop.md`, `docs/04-phase-3-state-memory.md`, `docs/07-phase-6-rag-as-tool.md`  
 uv (new project group):
 
 **Windows (PowerShell):**
@@ -149,7 +142,28 @@ Keep `MessagesState`, `StateGraph`, `START`, `END`. Next segment replaces `hello
 
 ## Segment 2 — Agent node + `ToolNode`
 
-Python just-in-time: a decorator is a function that takes a function and returns one. `@mark` above `def greet` means `greet = mark(greet)`. Read, do not paste:
+### Decorators in 20 seconds
+
+A decorator is a function that takes a function and returns one. `@mark` above `def greet` is the same as `greet = mark(greet)` after the def.
+
+Same wrapping, two shapes. Read, do not paste.
+
+**Without:**
+
+```python
+def mark(fn):
+    fn.marked = True
+    return fn
+
+
+def greet():
+    return "hi"
+
+
+greet = mark(greet)
+```
+
+**With:**
 
 ```python
 def mark(fn):
@@ -161,6 +175,11 @@ def mark(fn):
 def greet():
     return "hi"
 ```
+
+| Change | After the def | `@` above the def |
+|---|---|---|
+| What Python does | `greet = mark(greet)` | the same thing |
+| What you write | two steps | one line |
 
 `@tool` is that pattern: it keeps your function, and attaches a JSON schema the model can read. The **docstring** is the schema `description` — same job as the JSON you hand-wrote in Phase 2. A short label is enough.
 
