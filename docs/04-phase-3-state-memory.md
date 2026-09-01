@@ -1,6 +1,6 @@
 # Phase 3 — State and memory by hand
 
-Last grounded: 2026-08-31  
+Last grounded: 2026-09-01  
 Prereq files: `docs/00-setup.md`, `docs/02-phase-1-decoding.md`, `docs/03-phase-2-tool-loop.md`  
 Fetch before writing:  
 - https://docs.litellm.ai/docs/completion/token_usage  
@@ -62,7 +62,15 @@ Memory = **a dict you render into the prompt**.
 
 ## The big picture
 
-Start with the Phase 2 list, living outside the function. Then state = `{"messages": [...], "facts": {...}}`. History gives continuity; facts survive trimming. The system prompt is rebuilt every call from that dict.
+Start with the Phase 2 list, living outside the function. Then state = `{"messages": [...], "facts": {...}}`.
+
+**Messages outside `run_agent`.** Phase 2's list died when the function returned. Holding it yourself is what "memory" is.
+
+**Facts.** A small dict you render into the system prompt each turn, so notes survive when history is trimmed.
+
+**Render.** The model never sees your Python objects. Every call rebuilds a system string from the dict, then sends that plus the history.
+
+**Budget.** The list cannot grow forever. Cap drops oldest messages; summarize compresses them into `facts`.
 
 ```mermaid
 flowchart TD

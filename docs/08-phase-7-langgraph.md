@@ -80,7 +80,17 @@ Never `from langgraph.prebuilt import create_react_agent` — that import is dep
 
 ## The big picture
 
-Same loop as Phase 2. The boxes are functions. The arrows are the `if`.
+Same loop as Phase 2. The boxes are functions. The arrows are the `if`. LangGraph is the orchestration runtime: durable execution, a pause, and a snapshot — not a new kind of agent.
+
+**State.** `MessagesState` is Phase 3's list with an append reducer — new turns extend the list, they do not replace it.
+
+**Agent node.** Still `litellm.completion()`. The model proposes a tool call or writes a sentence.
+
+**`ToolNode` / `tools_condition`.** Phase 2's `if tool_calls` and the Python runner, as graph parts.
+
+**Checkpointer.** A snapshot after every step, keyed by `thread_id`, so a process kill does not wipe the thread.
+
+**`interrupt`.** Pause before a write; resume with `Command(resume=...)`. Not `input()`.
 
 ```mermaid
 flowchart TD

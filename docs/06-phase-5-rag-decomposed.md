@@ -1,6 +1,6 @@
 # Phase 5 — RAG decomposed (by hand)
 
-Last grounded: 2026-08-31  
+Last grounded: 2026-09-01  
 Prereq files: `docs/05-phase-4-rag-fast.md`  
 Fetch before writing:  
 - https://docs.trychroma.com/docs/overview/getting-started  
@@ -76,7 +76,19 @@ Not here on purpose: no agent loop (Phase 6 glues that), no rerank (done in 4).
 
 ## The big picture
 
-Same five stages as Phase 4. The only change: each box is now *yours*.
+Same five stages as Phase 4. The only change: each box is now yours.
+
+**Load.** `Path.read_text()` — no `SimpleDirectoryReader`.
+
+**Chunk.** Split on a character budget. Overlap re-includes the tail of the previous chunk so an idea cut by a boundary survives.
+
+**Embed.** `SentenceTransformer.encode()` — MiniLM, your call, not LlamaIndex `Settings`.
+
+**Store.** `collection.add(ids, documents, embeddings)` on the raw Chroma client.
+
+**Retrieve.** Embed the query, then `collection.query(...)`. Chroma returns cosine *distance*; smaller is better. Similarity ≈ `1 - distance`.
+
+**Generate.** Stuff top-k into a prompt and `completion()`.
 
 ```mermaid
 flowchart LR
@@ -88,11 +100,6 @@ flowchart LR
   F --> G["stuff prompt → completion()"]
   G --> H[answer]
 ```
-
-Two facts worth saying once:
-
-- **Overlap** re-includes the tail of the previous chunk at the head of the next. An idea cut by a boundary survives in at least one full chunk.
-- **Cosine distance** is what Chroma returns; smaller is better. Cosine similarity ≈ `1 - distance`. Do not mix the two up when thresholding.
 
 ---
 

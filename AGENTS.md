@@ -71,6 +71,7 @@ One `.py` grows. Each segment says keep X, add Y, replace Z. "Your finished file
 Write for one reader: a smart beginner building along in a terminal.
 
 - Headers say what's inside: "What you'll build", "Why it matters", "The big picture", "Don't add yet", "Worth knowing", "Your finished file". Never bare "What" / "Why" / "Concept".
+- **The big picture** (every build guide, not Phase 1): one sentence per stage this guide builds — what it is and why it exists. Only names that guide uses. Skeleton stays a recipe. No extra glossary (no Evaluation, routers, Document/Node unless that guide builds them). Read it aloud; if it sounds like a slide, cut. Phase 2: the section is prose; keep its mermaid after the loop.
 - Short sentences. Second person ("you"). Concrete verbs over abstractions.
 - Banned words: packet, cold-start, parking lot, shim, load-bearing, leverage, robust, seamless, delve. "Guide" is the standing noun for a phase doc.
 - Every code block is followed by what you should see when you run it.

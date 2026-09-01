@@ -1,6 +1,6 @@
 # Phase 2 — The raw tool-calling loop
 
-Last grounded: 2026-08-31  
+Last grounded: 2026-09-01  
 Prereq files: `docs/00-setup.md`, `docs/01-phase-0-orientation.md`, `docs/02-phase-1-decoding.md`  
 Fetch before writing:  
 - https://docs.litellm.ai/docs/  
@@ -71,6 +71,22 @@ The loop = **messages + schemas → call → run → append → repeat**.
 - OpenAI function calling (shape reference): https://platform.openai.com/docs/guides/function-calling
 - Anthropic tool use (contrast only): https://docs.anthropic.com/en/docs/agents-and-tools/tool-use/overview
 - Pydantic models: https://docs.pydantic.dev/latest/concepts/models/
+
+## The big picture
+
+The model never sees your Python. It sees messages plus JSON schemas, proposes a call, and you run the function.
+
+**Messages.** The only context the model has. User text, system text, and later tool results all live on this list.
+
+**Schemas (`TOOLS`).** JSON the model reads: name, description, argument types. Same job as Phase 0's docstring. OpenAI's function-calling flow is the same five beats: send tools, receive a call, run your code, send the output back, get a sentence (or another call).
+
+**Proposal.** `completion(..., tools=)` returns a sentence, or `tool_calls` with a name and a JSON-args string.
+
+**Run.** Your `if` on the name executes the Python. Pydantic checks the args; a bad payload becomes an error string, not a crash.
+
+**Append.** A `role: "tool"` message with the same `tool_call_id` puts the result on the list so the next `completion` can see it.
+
+**Stop.** No `tool_calls` → that text is the answer. Hitting `max_steps` raises — a runaway loop is a failure.
 
 ---
 
@@ -373,6 +389,7 @@ Do not add streaming or retries in this file. Do not start the LiteLLM proxy.
 | Pydantic serializer warning on `tool_calls` | Harmless. Gemini extra fields on the LiteLLM `Message` you appended. The tool still ran. Pydantic has no env mute like `LITELLM_LOG` — ignore it. |
 | Huge dump / `thought_signature` | You printed `resp` or `msg`. Print the three fields in Segment 3 instead. |
 | Sentence with `42` but no `your process ran add(...)` | The model did the math itself. Tighten the system prompt. |
+| `your process ran add(...)` twice, then a sentence with `42` anyway | The tool returned a number that did not match the description (e.g. you changed `a + b` to `a - b`). The model may retry the same call, then ignore the tool and compute itself. |
 
 ---
 

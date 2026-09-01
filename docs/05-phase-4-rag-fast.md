@@ -1,6 +1,6 @@
 # Phase 4 — RAG fast (LlamaIndex)
 
-Last grounded: 2026-08-31  
+Last grounded: 2026-09-01  
 Prereq files: `docs/03-phase-2-tool-loop.md`, `docs/04-phase-3-state-memory.md`  
 Fetch before writing:  
 - https://docs.llamaindex.ai/en/stable/module_guides/supporting_modules/settings/  
@@ -83,7 +83,17 @@ Rule of thumb for the rest of the course: **LlamaIndex retrieves; your loop (lat
 
 ## The big picture
 
-Five stages, in one diagram. Everything later hangs off these names.
+Five stages. Everything later hangs off these names.
+
+**Load.** Get files from `data/` into the index.
+
+**Embed.** Turn each chunk into a vector (MiniLM). Similar meaning sits nearby in that number space — that is how search works without keywords.
+
+**Store.** Persist those vectors in Chroma so you do not re-embed every run.
+
+**Retrieve.** Embed the question and take the nearest chunks (top-k).
+
+**Generate.** Stuff those chunks into a prompt and ask Gemini.
 
 ```mermaid
 flowchart LR

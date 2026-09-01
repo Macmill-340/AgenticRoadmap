@@ -1,6 +1,6 @@
 # Phase 0 — Orientation
 
-Last grounded: 2026-08-27  
+Last grounded: 2026-09-01  
 Prereq files: `AGENTS.md`, `docs/00-setup.md`  
 Fetch before writing:  
 - https://docs.llamaindex.ai/en/stable/understanding/agent/  
@@ -63,7 +63,13 @@ An agent = **model + tools + a loop**.
 
 ## The big picture
 
-An agent is an LLM plus tools plus a loop: the model either answers or emits a structured call; your code runs the function; the result goes back; repeat until it answers. Here the framework owns the loop. Phase 2 will make you own it.
+An agent is an LLM plus tools plus a loop. Here the framework owns the loop. Phase 2 will make you own it.
+
+**Model.** Gemini through LiteLLM. It only sees the question plus each tool's name, argument types, and docstring — never your Python body.
+
+**Tool.** A normal function you wrote. The model proposes a name and arguments; your process runs the body (the `your process ran multiply(...)` print is the proof).
+
+**Loop.** `FunctionAgent` calls the model, runs the function, sends the result back, and repeats until the model writes a sentence.
 
 ---
 

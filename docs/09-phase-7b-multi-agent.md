@@ -75,6 +75,14 @@ Not in this file: router, Skills, A2A, Deep Agents, `create_agent`, `create_reac
 
 Results flow back through the supervisor. Specialists do not talk to you.
 
+**Supervisor.** The same agent node as Phase 7. Its tools happen to be other agents.
+
+**`research`.** RAG wrapped as a tool. It returns notes, not a user-facing answer.
+
+**`writer`.** No tools of its own. It shapes markdown. The supervisor never sees its inner messages — only the string it returns.
+
+**Handoff (contrast).** A different wiring: the specialist becomes the next speaker (`Command.goto`). Read, do not paste as the build.
+
 ```mermaid
 flowchart TD
   U[user] --> S[supervisor]

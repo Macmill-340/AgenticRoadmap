@@ -27,6 +27,7 @@ MILESTONE_NAMES = {
     "08-phase-7-langgraph.md",
     "09-phase-7b-multi-agent.md",
 }
+CONCEPT_ONLY = {"02-phase-1-decoding.md"}
 
 
 def python_fences(text: str) -> list[str]:
@@ -59,6 +60,10 @@ def check(path: Path) -> list[str]:
     mermaids = len(re.findall(r"```mermaid", text))
     if mermaids != 1:
         errors.append(f"expected 1 mermaid, found {mermaids}")
+
+    big = heading_pos(text, r"^## The big picture$")
+    if name not in CONCEPT_ONLY and big is None:
+        errors.append("missing ## The big picture")
 
     checkpoint = heading_pos(text, r"^## Checkpoint$")
     if checkpoint is None:

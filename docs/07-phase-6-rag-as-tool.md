@@ -1,6 +1,6 @@
 # Phase 6 — RAG as a tool (the glue)
 
-Last grounded: 2026-08-31  
+Last grounded: 2026-09-01  
 Prereq files: `docs/03-phase-2-tool-loop.md`, `docs/05-phase-4-rag-fast.md`  
 Fetch before writing:  
 - https://docs.litellm.ai/docs/providers/gemini  
@@ -71,6 +71,14 @@ Copy both halves into this file — **do not import across venvs** (`foundation`
 ## The big picture
 
 One loop, three exits: arithmetic → `add`; notes → `search_notes`; neither → answer directly. The model decides from schemas alone.
+
+**Engine.** The Phase 4 query object, built once.
+
+**Wrapper.** `search_notes(query)` is a plain function. The loop does not know it is RAG.
+
+**Schema.** The JSON `description` is how the model chooses retrieve vs add vs answer — same slot as Phase 0's docstring.
+
+**Loop.** Phase 2's `run_agent` with one more `if` branch. The result still goes back as `role: "tool"`.
 
 ```mermaid
 flowchart TD
